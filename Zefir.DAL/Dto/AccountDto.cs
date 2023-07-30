@@ -1,10 +1,6 @@
-﻿using Zefir.Domain.Entity;
-
-namespace Zefir.DAL.Dto;
+﻿namespace Zefir.DAL.Dto;
 
 public record AccountDto(string Email, string Password);
-
-public record LoginResponseDto(User? User, string? Token, string? RefreshToken, List<string>? Errors);
 
 public record RegisterDto(
     string Name,
@@ -15,6 +11,8 @@ public record RegisterDto(
     string PasswordConfirm
 );
 
-public record RegisterResponseDto(User? User, string? Token, string? RefreshToken, List<string>? Errors);
+public record UserDataDto(string Name, string Surname, string Phone, string Email);
+
+public record AccountResponseDto(UserDataDto? User, string? Token, string? RefreshToken, List<string>? Errors);
 
 public record RefreshDto(string RefreshToken);

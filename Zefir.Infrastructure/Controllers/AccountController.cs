@@ -94,7 +94,7 @@ public class AccountController : ControllerBase
     ///     Gets data and add new user
     /// </summary>
     /// <param name="dto">User fields <see cref="RegisterDto" /></param>
-    /// <returns>User and jwt token OR list of errors <see cref="RegisterResponseDto" /></returns>
+    /// <returns>User and jwt token OR list of errors <see cref="AccountResponseDto" /></returns>
     [HttpPost("register", Name = RegisterRouteName)]
     [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterDto dto)
