@@ -18,6 +18,7 @@ public class AccountController : ControllerBase
     private const string RefreshTokenRouteName = "refresh-token";
     private const string DeleteAccountRouteName = "delete-account";
 
+
     private readonly AccountService _accountService;
 
     /// <summary>
@@ -178,7 +179,7 @@ public class AccountController : ControllerBase
     /// <returns>Unauthorized with list of errors OR login data <see cref="LoginResponseDto" /></returns>
     [HttpPost("refresh", Name = RefreshTokenRouteName)]
     [AllowAnonymous]
-    public async Task<IActionResult> RefreshToken(string refreshToken)
+    public async Task<IActionResult> RefreshToken(RefreshDto refreshToken)
     {
         try
         {
@@ -186,7 +187,7 @@ public class AccountController : ControllerBase
             if (string.IsNullOrWhiteSpace(authHeader))
                 return Unauthorized(new { errors = new List<string> { "Authorization header is undefined" } });
             var accessToken = authHeader.ToString().Split(" ")[1];
-            var result = await _accountService.RefreshToken(accessToken, refreshToken);
+            var result = await _accountService.RefreshToken(accessToken, refreshToken.RefreshToken);
             if (result.Errors != null) return Unauthorized(new { result.Errors });
             return Ok(result);
         }

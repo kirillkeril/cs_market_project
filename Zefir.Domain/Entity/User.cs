@@ -75,10 +75,6 @@ public class User
     public string? RefreshToken
     {
         get => _refreshToken;
-        set
-        {
-            if (!string.IsNullOrWhiteSpace(value)) _refreshToken = value;
-            else throw new ArgumentException("This field can't be null");
-        }
+        set => _refreshToken = value;
     }
 }

@@ -16,3 +16,5 @@ public record RegisterDto(
 );
 
 public record RegisterResponseDto(User? User, string? Token, string? RefreshToken, List<string>? Errors);
+
+public record RefreshDto(string RefreshToken);

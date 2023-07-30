@@ -54,7 +54,7 @@ public class AccountService
         if (errors.Count > 0) return new RegisterResponseDto(null, null, null, errors);
 
         var refreshToken = _tokenService.BuildRefreshToken();
-        var hashedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password, 17);
+        var hashedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password, 10);
         candidate = new User(dto.Name, dto.Surname, dto.Phone, dto.Email, hashedPassword)
             { RefreshToken = refreshToken };
         var token = _tokenService.BuildToken(candidate);
@@ -92,12 +92,10 @@ public class AccountService
             u =>
                 u.Email.Equals(dto.Email));
         if (candidate is null) return false;
-        // var h = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password);
         var isSame = BCrypt.Net.BCrypt.EnhancedVerify(dto.Password, candidate.HashedPassword);
         if (!isSame) return false;
 
         _appContext.Users.Remove(candidate);
-        // var b = h == candidate.HashedPassword;
         await _appContext.SaveChangesAsync();
         return true;
     }

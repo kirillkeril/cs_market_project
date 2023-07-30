@@ -27,7 +27,7 @@ public class TokenService : ITokenService
         var audience = _configuration["Jwt:Audience"];
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, user.Name),
+            new Claim(ClaimTypes.Name, user.Email),
             new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.Surname, user.Surname),
             new Claim(ClaimTypes.Email, user.Email)
@@ -65,7 +65,8 @@ public class TokenService : ITokenService
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParams, out var securityToken);
         var jwtSecurityToken = securityToken as JwtSecurityToken;
-        if (jwtSecurityToken != null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature,
+
+        if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature,
                 StringComparison.InvariantCultureIgnoreCase)) throw new SecurityTokenException("Invalid token");
         return principal;
     }
