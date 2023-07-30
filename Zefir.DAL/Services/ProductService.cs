@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Zefir.DAL.Dto;
+using Zefir.DAL.Errors;
 using Zefir.Domain.Entity;
 
 namespace Zefir.DAL.Services;
@@ -15,7 +16,10 @@ public class ProductService
 
     public async Task<List<Product>> GetAllProducts()
     {
-        return await _appDbContext.Products.Include(p => p.Characteristics).ToListAsync();
+        return await _appDbContext.Products
+            .Include(p => p.Characteristics)
+            .Include(p => p.Category)
+            .ToListAsync();
     }
 
     public async Task<List<Product>> GetBySearch(string search)
@@ -24,9 +28,13 @@ public class ProductService
             p =>
                 p.Name.Contains(search) ||
                 p.Description.Contains(search) ||
+                (p.Category != null && (p.Category.Description.Contains(search) || p.Category.Name.Contains(search))) ||
                 p.Characteristics.Any(c => c.Value.Contains(search)));
 
-        return await products.ToListAsync();
+        return await products
+            .Include(p => p.Category)
+            .Include(p => p.Characteristics)
+            .ToListAsync();
     }
 
     public async Task<Product?> GetProductById(int id)
@@ -43,7 +51,6 @@ public class ProductService
             foreach (var characteristic in dto.Characteristics)
             {
                 var newCharacteristic = new Characteristics(characteristic.Key, characteristic.Value);
-                // _appDbContext.Characteristics.Add(newCharacteristic);
                 newProduct.Characteristics.Add(newCharacteristic);
             }
         }
@@ -53,6 +60,11 @@ public class ProductService
             throw new Exception(e.Message);
         }
 
+        // TODO протестить добавление категории
+        var targetCategory = await _appDbContext.Categories.FirstOrDefaultAsync(c =>
+            c.Name.Equals(dto.CategoryName));
+        if (targetCategory is null) throw new ServiceBadRequestError((nameof(dto.CategoryName), "No such category"));
+        newProduct.Category = targetCategory;
 
         _appDbContext.Products.Add(newProduct);
         await _appDbContext.Characteristics.AddRangeAsync(newProduct.Characteristics);
@@ -74,6 +86,12 @@ public class ProductService
             if (possibleCharacteristic is not null) possibleCharacteristic.Value = newCharacteristic.Value;
             else product.Characteristics.Add(newCharacteristic);
         }
+
+        // TODO протестить добавление категории
+        var targetCategory = await _appDbContext.Categories.FirstOrDefaultAsync(c =>
+            c.Name.Equals(dto.CategoryName));
+        if (targetCategory is null) throw new ServiceBadRequestError((nameof(dto.CategoryName), "No such category"));
+        product.Category = targetCategory;
 
         await _appDbContext.SaveChangesAsync();
 

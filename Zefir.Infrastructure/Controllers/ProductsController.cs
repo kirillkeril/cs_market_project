@@ -7,6 +7,7 @@ using Zefir.Domain.Entity;
 namespace Zefir.Infrastructure.Controllers;
 
 /// <summary>
+///  CRUD operations with products (admin only)
 /// </summary>
 [Authorize]
 [ApiController]
@@ -17,8 +18,9 @@ public class ProductController : ControllerBase
     private const string GetAllRouteName = "get-products";
     private const string GetByIdRouteName = "get-products-by-id";
     private const string CreateProductRouteName = "create-product";
+    private const string UpdateProductRouteName = "update-product";
+    private const string DeleteProductRouteName = "delete-product";
 
-    // TODO make documentation
     /// <summary>
     /// </summary>
     /// <param name="productService"></param>
@@ -47,7 +49,7 @@ public class ProductController : ControllerBase
     /// <summary>
     ///     Get one product by id
     /// </summary>
-    /// <param name="id">integer</param>
+    /// <param name="id">integer id</param>
     /// <returns>One product or null</returns>
     [HttpGet("{id}", Name = GetByIdRouteName)]
     [AllowAnonymous]
@@ -59,10 +61,10 @@ public class ProductController : ControllerBase
     }
 
     /// <summary>
-    ///     Creates new product
+    ///     Creates new product (admin only)
     /// </summary>
+    /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
     [HttpPost(Name = CreateProductRouteName)]
-    [AllowAnonymous]
     public async Task<ActionResult> CreateProduct(CreateProductDto dto)
     {
         try
@@ -79,12 +81,12 @@ public class ProductController : ControllerBase
     }
 
     /// <summary>
-    ///     Updates product by id
+    ///     Updates product by id (admin only)
     /// </summary>
     /// <param name="id">int id</param>
     /// <param name="dto">Data to update</param>
     /// <returns>Updated product</returns>
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:int}", Name = UpdateProductRouteName)]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto dto)
     {
         try
@@ -100,10 +102,11 @@ public class ProductController : ControllerBase
     }
 
     /// <summary>
+    /// Delete product by id (admin only)
     /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [HttpDelete("{id:int}")]
+    /// <param name="id">integer id</param>
+    /// <returns>Ok OR 404 OR 500 with errors</returns>
+    [HttpDelete("{id:int}", Name = DeleteProductRouteName)]
     public async Task<IActionResult> DeleteProduct(int id)
     {
         try

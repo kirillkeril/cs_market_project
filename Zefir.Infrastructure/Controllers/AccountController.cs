@@ -7,6 +7,7 @@ using Zefir.DAL.Services;
 namespace Zefir.Infrastructure.Controllers;
 
 /// <summary>
+/// Accounts api controller
 /// </summary>
 [ApiController]
 [Route("[controller]")]
@@ -17,6 +18,7 @@ public class AccountController : ControllerBase
     private const string LogoutRouteName = "logout";
     private const string RefreshTokenRouteName = "refresh-token";
     private const string DeleteAccountRouteName = "delete-account";
+    private const string DeleteAccountByIdRouteName = "delete-account";
 
 
     private readonly AccountService _accountService;
@@ -31,8 +33,9 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
+    /// Get all users (admin only)
     /// </summary>
-    /// <returns></returns>
+    /// <returns>204 OR 200 with users</returns>
     [Authorize]
     [HttpGet("all")]
     public async Task<IActionResult> GetAll()
@@ -43,10 +46,10 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
+    /// Get user by id (admin only)
     /// </summary>
-    /// <param name="id"></param>
-    /// ///
-    /// <returns></returns>
+    /// <param name="id">integer id</param>
+    /// <returns>200 with user OR 404 with errors OR 500 with errors</returns>
     [Authorize]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
@@ -62,15 +65,16 @@ public class AccountController : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            return StatusCode(500, new { errors = new List<string> { e.Message } });
         }
     }
 
     /// <summary>
+    /// Get user by email (admin only)
     /// </summary>
-    /// <param name="email"></param>
-    /// <returns></returns>
+    /// <param name="email">string email</param>
+    /// <returns>Ok with user OR 404 with errors OR 500 with errors</returns>
+    [Authorize]
     [HttpGet("{email}")]
     public async Task<IActionResult> GetByEmail(string email)
     {
@@ -85,8 +89,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            return StatusCode(500, new { errors = new List<string> { e.Message } });
         }
     }
 
@@ -115,7 +118,7 @@ public class AccountController : ControllerBase
     ///     Login with email and password
     /// </summary>
     /// <param name="dto">Login data <see cref="AccountDto" /></param>
-    /// <returns>User and token OR list of errors <see cref="LoginResponseDto" /></returns>
+    /// <returns>User and token OR list of errors <see cref="AccountDto" /></returns>
     [HttpPost("login", Name = LoginRouteName)]
     [AllowAnonymous]
     public async Task<IActionResult> Login(AccountDto dto)
@@ -133,7 +136,7 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
-    ///     Removes users account
+    ///     Removes user's account
     /// </summary>
     /// <param name="dto">Login data</param>
     /// <returns>Bad request if users not found OR no content if user deleted</returns>
@@ -153,11 +156,12 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
+    /// Delete user by id (admin only)
     /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+    /// <param name="id">integer id</param>
+    /// <returns>204 OR 404 OR 500 with errors</returns>
     [Authorize]
-    [HttpDelete("delete/{id:int}")]
+    [HttpDelete("delete/{id:int}", Name = DeleteAccountByIdRouteName)]
     public async Task<IActionResult> DeleteById(int id)
     {
         try
@@ -176,9 +180,9 @@ public class AccountController : ControllerBase
     ///     Return new pair of access and refresh tokens;
     /// </summary>
     /// <param name="refreshToken">User's refresh token</param>
-    /// <returns>Unauthorized with list of errors OR login data <see cref="LoginResponseDto" /></returns>
-    [HttpPost("refresh", Name = RefreshTokenRouteName)]
+    /// <returns>Unauthorized with list of errors OR login data <see cref="AccountDto" /></returns>
     [AllowAnonymous]
+    [HttpPost("refresh", Name = RefreshTokenRouteName)]
     public async Task<IActionResult> RefreshToken(RefreshDto refreshToken)
     {
         try

@@ -25,6 +25,7 @@ public class TokenService : ITokenService
         var key = _configuration["Jwt:Key"];
         var issuer = _configuration["Jwt:Issuer"];
         var audience = _configuration["Jwt:Audience"];
+        if (key is null) throw new ArgumentNullException(nameof(key));
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, user.Email),
@@ -53,6 +54,7 @@ public class TokenService : ITokenService
     public ClaimsPrincipal GetClaimsFromExpiredToken(string token)
     {
         var key = _configuration["Jwt:Key"];
+        if (key is null) throw new ArgumentNullException(nameof(key));
         var tokenValidationParams = new TokenValidationParameters
         {
             ValidateAudience = true,

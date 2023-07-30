@@ -2,7 +2,7 @@
 
 public class ServiceNotFoundError : Exception
 {
-    public string Message { get; }
+    public new string Message { get; }
 
     public ServiceNotFoundError(string message)
     {

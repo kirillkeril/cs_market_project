@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
@@ -6,6 +7,7 @@ using Zefir.DAL.Services;
 namespace Zefir.Infrastructure.Controllers;
 
 /// <summary>
+///     CRUD operations with categories
 /// </summary>
 [ApiController]
 [Route("[controller]")]
@@ -15,8 +17,9 @@ public class CategoriesController : ControllerBase
     private const string GetAllRouteName = "get-all";
     private const string GetByNameRouteName = "get-by-name";
     private const string CreateNewRouteName = "create-new";
+    private const string UpdateNewRouteName = "update";
+    private const string DeleteRouteName = "delete";
 
-    // TODO make documentation
     /// <summary>
     /// </summary>
     /// <param name="categoryService"></param>
@@ -26,8 +29,9 @@ public class CategoriesController : ControllerBase
     }
 
     /// <summary>
+    /// Returns new list of categories
     /// </summary>
-    /// <returns></returns>
+    /// <returns>List of categories</returns>
     [HttpGet("", Name = GetAllRouteName)]
     public async Task<IActionResult> GetAll()
     {
@@ -36,9 +40,10 @@ public class CategoriesController : ControllerBase
     }
 
     /// <summary>
+    /// Find category by name
     /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="name">String name of category</param>
+    /// <returns>One category object</returns>
     [HttpGet("{name}", Name = GetByNameRouteName)]
     public async Task<IActionResult> GetByName(string name)
     {
@@ -61,10 +66,12 @@ public class CategoriesController : ControllerBase
     }
 
     /// <summary>
+    /// Creates new category (admin only)
     /// </summary>
-    /// <param name="dto"></param>
-    /// <returns></returns>
+    /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
+    /// <returns>201 with created at or 400 with errors or 500 with errors</returns>
     [HttpPost("", Name = CreateNewRouteName)]
+    [Authorize]
     public async Task<IActionResult> Create(CreateCategoryDto dto)
     {
         try
@@ -84,10 +91,13 @@ public class CategoriesController : ControllerBase
     }
 
     /// <summary>
+    /// Updates category (admin only)
     /// </summary>
-    /// <param name="dto"></param>
-    /// <returns></returns>
-    [HttpPut("{name}")]
+    /// <param name="name">string name of category</param>
+    /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
+    /// <returns>200 with updated object or 400 with errors or 404 with errors or 500 with errors</returns>
+    [HttpPut("{name}", Name = UpdateNewRouteName)]
+    [Authorize]
     public async Task<IActionResult> Update(string name, CreateCategoryDto dto)
     {
         try
@@ -110,10 +120,12 @@ public class CategoriesController : ControllerBase
     }
 
     /// <summary>
+    /// Delete category by name (admin only)
     /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    [HttpDelete("{name}")]
+    /// <param name="name">string name</param>
+    /// <returns>204 no content OR 404 OR 500 with errors</returns>
+    [HttpDelete("{name}", Name = DeleteRouteName)]
+    [Authorize]
     public async Task<IActionResult> Delete(string name)
     {
         try
