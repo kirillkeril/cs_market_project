@@ -55,7 +55,9 @@ public class AccountService
 
         // TODO make hashing of password
         var refreshToken = _tokenService.BuildRefreshToken();
-        candidate = new User(dto.Name, dto.Surname, dto.Phone, dto.Email, dto.Password) { RefreshToken = refreshToken };
+        var hashedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password, 17);
+        candidate = new User(dto.Name, dto.Surname, dto.Phone, dto.Email, hashedPassword)
+            { RefreshToken = refreshToken };
         var token = _tokenService.BuildToken(candidate);
 
         await _appContext.Users.AddAsync(candidate);
@@ -66,13 +68,14 @@ public class AccountService
     public async Task<LoginResponseDto> Login(AccountDto dto)
     {
         var errors = new List<string>();
-        var hashedPassword = dto.Password;
 
         // TODO make checking hashing of password
         var candidate =
             await _appContext.Users.FirstOrDefaultAsync(u =>
-                u.Email == dto.Email && u.HashedPassword == hashedPassword);
-        if (candidate != null)
+                u.Email == dto.Email);
+        if (
+            candidate != null &&
+            BCrypt.Net.BCrypt.EnhancedVerify(dto.Password, candidate.HashedPassword))
         {
             var token = _tokenService.BuildToken(candidate);
             var refreshToken = _tokenService.BuildRefreshToken();
@@ -87,13 +90,16 @@ public class AccountService
 
     public async Task<bool> DeleteAccount(AccountDto dto)
     {
-        var hashedPassword = dto.Password;
         var candidate = await _appContext.Users.FirstOrDefaultAsync(
             u =>
-                u.Email.Equals(dto.Email) &&
-                u.HashedPassword.Equals(hashedPassword));
+                u.Email.Equals(dto.Email));
         if (candidate is null) return false;
+        // var h = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password);
+        var isSame = BCrypt.Net.BCrypt.EnhancedVerify(dto.Password, candidate.HashedPassword);
+        if (!isSame) return false;
+
         _appContext.Users.Remove(candidate);
+        // var b = h == candidate.HashedPassword;
         await _appContext.SaveChangesAsync();
         return true;
     }
