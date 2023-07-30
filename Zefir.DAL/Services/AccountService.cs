@@ -53,7 +53,6 @@ public class AccountService
 
         if (errors.Count > 0) return new RegisterResponseDto(null, null, null, errors);
 
-        // TODO make hashing of password
         var refreshToken = _tokenService.BuildRefreshToken();
         var hashedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password, 17);
         candidate = new User(dto.Name, dto.Surname, dto.Phone, dto.Email, hashedPassword)
@@ -69,7 +68,6 @@ public class AccountService
     {
         var errors = new List<string>();
 
-        // TODO make checking hashing of password
         var candidate =
             await _appContext.Users.FirstOrDefaultAsync(u =>
                 u.Email == dto.Email);
