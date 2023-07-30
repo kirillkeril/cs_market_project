@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zefir.Infrastructure", "Zefir.Infrastructure\Zefir.Infrastructure.csproj", "{4C495F20-5E80-431A-B6F1-37F840F8FD71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zefir.Domain", "Zefir.Domain\Zefir.Domain.csproj", "{B13B141E-804F-48AB-975A-6083051D58D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zefir.DAL", "Zefir.DAL\Zefir.DAL.csproj", "{1A72111D-1298-4236-AFB3-F5F131B85514}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C495F20-5E80-431A-B6F1-37F840F8FD71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C495F20-5E80-431A-B6F1-37F840F8FD71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C495F20-5E80-431A-B6F1-37F840F8FD71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C495F20-5E80-431A-B6F1-37F840F8FD71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B13B141E-804F-48AB-975A-6083051D58D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B13B141E-804F-48AB-975A-6083051D58D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B13B141E-804F-48AB-975A-6083051D58D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B13B141E-804F-48AB-975A-6083051D58D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A72111D-1298-4236-AFB3-F5F131B85514}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A72111D-1298-4236-AFB3-F5F131B85514}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A72111D-1298-4236-AFB3-F5F131B85514}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A72111D-1298-4236-AFB3-F5F131B85514}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
