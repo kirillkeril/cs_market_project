@@ -3,7 +3,7 @@
 public class Order
 {
     public int Id { get; set; }
-    public User User { get; set; }
+    public User? User { get; set; }
     public ICollection<Product> Products { get; set; }
     public int Status { get; set; }
     public DateTime CreatedAt { get; }
@@ -19,8 +19,22 @@ public class Order
 
 public enum Status
 {
-    Failed = -1,
+    Rejected = -1,
     Default = 0,
     InWork = 1,
     Done = 2
+}
+
+public static class StatusExtensions
+{
+    public static string ToString(this Status status)
+    {
+        switch (status)
+        {
+            case Status.Rejected: return nameof(Status.Rejected);
+            case Status.InWork: return nameof(Status.InWork);
+            case Status.Done: return nameof(Status.Done);
+            default: return nameof(Status.Default);
+        }
+    }
 }

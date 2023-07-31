@@ -16,6 +16,8 @@ namespace Zefir.Infrastructure.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly OrderService _orderService;
+    private const string GetAllOrderRouteName = "get-all-orders";
+    private const string GetOwnOrdersRouteName = "get-own-orders";
     private const string CreateOrderRouteName = "create-order";
     private const string UpdateOrderStatus = "update-order-status";
 
@@ -28,8 +30,63 @@ public class OrdersController : ControllerBase
     }
 
     /// <summary>
+    ///     Gets all orders or all orders for one user by id (admin only)
     /// </summary>
-    /// <param name="dto"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    [HttpGet("all", Name = GetAllOrderRouteName)]
+    [Authorize]
+    public async Task<IActionResult> GetAllOrders([FromQuery] int? userId)
+    {
+        try
+        {
+            var result = await _orderService.GetAllOrders(userId);
+            return Ok(result);
+        }
+        catch (ServiceBadRequestError e)
+        {
+            return BadRequest(new { errors = e.FieldErrors });
+        }
+        catch (ServiceNotFoundError e)
+        {
+            return NotFound(new { errors = new List<string> { e.Message } });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { errors = new List<string> { e.Message } });
+        }
+    }
+
+    /// <summary>
+    ///     Get user's own orders by his claim
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("", Name = GetOwnOrdersRouteName)]
+    [Authorize]
+    public async Task<IActionResult> GetOwnOrders()
+    {
+        try
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim is null) return Unauthorized();
+            if (int.TryParse(userIdClaim.Value, out var userId))
+            {
+                var result = await _orderService.GetOwnOrders(userId);
+                return Ok(result);
+            }
+
+            return Unauthorized();
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { errors = new List<string> { e.Message } });
+        }
+    }
+
+    /// <summary>
+    /// User create order with product
+    /// </summary>
+    /// <param name="dto">Data<see cref="CreateOrderDto"/></param>
     /// <returns></returns>
     [HttpPost("", Name = CreateOrderRouteName)]
     public async Task<IActionResult> CreateOrder(CreateOrderDto dto)

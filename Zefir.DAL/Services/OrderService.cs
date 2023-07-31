@@ -15,6 +15,52 @@ public class OrderService
         _appDbContext = appDbContext;
     }
 
+    public async Task<List<PublicOrderData>> GetAllOrders(int? userId = null)
+    {
+        List<Order> orders;
+        if (userId is null)
+            orders = await _appDbContext.Orders
+                .Include(o => o.User)
+                .Include(o => o.Products)
+                .ToListAsync();
+        else
+            orders = await _appDbContext.Orders
+                .Include(o => o.User)
+                .Include(o => o.Products)
+                .Where(o => o.User.Id == userId)
+                .ToListAsync();
+
+        var publicOrders = new List<PublicOrderData>();
+
+        foreach (var order in orders)
+        {
+            var status = Enum.Parse<Status>(order.Status.ToString());
+            publicOrders.Add(
+                new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
+        }
+
+        return publicOrders;
+    }
+
+    public async Task<List<PublicOrderData>> GetOwnOrders(int ownerId)
+    {
+        var orders = await _appDbContext.Orders
+            .Include(o => o.Products)
+            .Include(o => o.User)
+            .Where(o => o.User.Id == ownerId)
+            .ToListAsync();
+
+        List<PublicOrderData> publicOrders = new();
+        foreach (var order in orders)
+        {
+            var status = Enum.Parse<Status>(order.Status.ToString());
+            publicOrders.Add(
+                new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
+        }
+
+        return publicOrders;
+    }
+
     public async Task<PublicOrderData> CreateOrder(int userId, CreateOrderDto orderDto)
     {
         DateOnly deadline;
@@ -44,11 +90,12 @@ public class OrderService
         await _appDbContext.Orders.AddAsync(order);
         await _appDbContext.SaveChangesAsync();
 
+        var status = Enum.Parse<Status>(order.Status.ToString());
         var publicOrder = new PublicOrderData(
             order.Id,
             order.User.Id,
             order.Products,
-            (Status)order.Status,
+            status.ToString(),
             order.Deadline);
         return publicOrder;
     }
@@ -67,13 +114,11 @@ public class OrderService
         if (!Enum.TryParse(candidate.Status.ToString(), out Status newStatus))
             throw new ServiceBadRequestError((nameof(dto.Status), "Invalid status"));
 
-        // var user = _appDbContext.Users.FirstOrDefaultAsync(u => u.Id == candidate.User.Id);
-
         var publicOrderData = new PublicOrderData(
             candidate.Id,
             candidate.User.Id,
             candidate.Products.ToList(),
-            newStatus,
+            newStatus.ToString(),
             candidate.Deadline);
         return publicOrderData;
     }

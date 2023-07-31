@@ -17,6 +17,6 @@ public record PublicOrderData(
     int Id,
     int UserId,
     IEnumerable<Product> Products,
-    Status Status,
+    string Status,
     DateOnly Deadline
 );
