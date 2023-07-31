@@ -34,7 +34,7 @@ public class Category
         }
     }
 
-    public Product[]? Products { get; set; }
+    public ICollection<Product>? Products { get; set; }
 
     public DateTime CreatedAt { get; }
 }

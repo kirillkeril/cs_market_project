@@ -28,6 +28,7 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<OrderService>();
 
 // Authentication and authorization
 builder.Services.AddSingleton<ITokenService>(new TokenService(builder.Configuration));

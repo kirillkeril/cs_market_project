@@ -15,3 +15,6 @@ public record UpdateProductDto
     string CategoryName,
     Dictionary<string, string> Characteristics
 );
+
+public record PublicProductData(int Id, string Name, string Description, string CategoryName, Dictionary<string,
+    string> Characteristics);

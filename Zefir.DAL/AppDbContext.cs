@@ -15,4 +15,9 @@ public sealed class AppDbContext : DbContext
     public DbSet<Category> Categories { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
+
+    /// <inheritdoc />
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+    }
 }

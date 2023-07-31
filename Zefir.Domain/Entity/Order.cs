@@ -1,22 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Zefir.Domain.Entity;
+﻿namespace Zefir.Domain.Entity;
 
 public class Order
 {
-    [Key] public int Id { get; }
-    [ForeignKey(nameof(User))] public int UserId { get; set; }
-    [ForeignKey(nameof(Product))] public int[] ProductsId { get; set; }
+    public int Id { get; set; }
+    public User User { get; set; }
+    public ICollection<Product> Products { get; set; }
     public int Status { get; set; }
     public DateTime CreatedAt { get; }
-    public DateTime Deadline { get; set; }
+    public DateOnly Deadline { get; set; }
 
-    public Order(int userId, int[] productsId, Status status, DateTime deadline)
+    public Order(DateOnly deadline)
     {
-        UserId = userId;
-        ProductsId = productsId;
-        Status = (int)status;
+        Status = (int)Entity.Status.Default;
         Deadline = deadline;
         CreatedAt = DateTime.Now;
     }

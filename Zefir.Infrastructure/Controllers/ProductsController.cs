@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
+using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
 using Zefir.Domain.Entity;
 
@@ -71,8 +72,21 @@ public class ProductController : ControllerBase
         {
             var newProduct = await _productService.CreateProduct(dto);
             if (newProduct != null)
-                return CreatedAtRoute(GetByIdRouteName, new { newProduct.Id }, newProduct);
+            {
+                var characteristics = new Dictionary<string, string>();
+                foreach (var characteristic in newProduct.Characteristics)
+                    characteristics.Add(characteristic.Key, characteristic.Value);
+
+                var publicProductData = new PublicProductData(newProduct.Id, newProduct.Name, newProduct.Description,
+                    newProduct.Category.Name, characteristics);
+                return CreatedAtRoute(GetByIdRouteName, new { newProduct.Id }, publicProductData);
+            }
+
             return BadRequest(new { errpor = "Product not created. Check your data." });
+        }
+        catch (ServiceBadRequestError e)
+        {
+            return BadRequest(new { errors = e.FieldErrors });
         }
         catch (Exception e)
         {

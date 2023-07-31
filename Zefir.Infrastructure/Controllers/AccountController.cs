@@ -18,7 +18,7 @@ public class AccountController : ControllerBase
     private const string LogoutRouteName = "logout";
     private const string RefreshTokenRouteName = "refresh-token";
     private const string DeleteAccountRouteName = "delete-account";
-    private const string DeleteAccountByIdRouteName = "delete-account";
+    private const string DeleteAccountByIdRouteName = "delete-account-by-id";
 
 
     private readonly AccountService _accountService;
