@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
-using Zefir.Domain.Entity;
 
 namespace Zefir.Infrastructure.Controllers;
 
@@ -38,7 +37,7 @@ public class ProductController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult> GetAll(string? searchQuery = "")
     {
-        List<Product> products;
+        List<PublicProductData> products;
 
         if (string.IsNullOrWhiteSpace(searchQuery))
             products = await _productService.GetAllProducts();
@@ -73,13 +72,7 @@ public class ProductController : ControllerBase
             var newProduct = await _productService.CreateProduct(dto);
             if (newProduct != null)
             {
-                var characteristics = new Dictionary<string, string>();
-                foreach (var characteristic in newProduct.Characteristics)
-                    characteristics.Add(characteristic.Key, characteristic.Value);
-
-                var publicProductData = new PublicProductData(newProduct.Id, newProduct.Name, newProduct.Description,
-                    newProduct.Category.Name, characteristics);
-                return CreatedAtRoute(GetByIdRouteName, new { newProduct.Id }, publicProductData);
+                return CreatedAtRoute(GetByIdRouteName, new { newProduct.Id }, newProduct);
             }
 
             return BadRequest(new { errpor = "Product not created. Check your data." });
@@ -106,8 +99,15 @@ public class ProductController : ControllerBase
         try
         {
             var updatedProduct = await _productService.UpdateProduct(id, dto);
-            if (updatedProduct is not null) return Ok(new { result = updatedProduct });
-            return BadRequest(new { errors = new List<string> { "Invalid data" } });
+            return Ok(new { result = updatedProduct });
+        }
+        catch (ServiceBadRequestError e)
+        {
+            return BadRequest(new { errors = e.FieldErrors });
+        }
+        catch (ServiceNotFoundError e)
+        {
+            return NotFound(new { errors = new List<string> { e.Message } });
         }
         catch (Exception e)
         {
