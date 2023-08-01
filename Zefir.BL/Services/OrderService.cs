@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Zefir.BL.Contracts;
 using Zefir.Core.Entity;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
+using Zefir.Core.Errors;
+using Zefir.DAL;
 
-namespace Zefir.DAL.Services;
+namespace Zefir.BL.Services;
 
 public class OrderService
 {
@@ -36,7 +37,8 @@ public class OrderService
             var status = Enum.Parse<Status>(order.Status.ToString());
             if (order.User != null)
                 publicOrders.Add(
-                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
+                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline,
+                        order.Sum));
         }
 
         return publicOrders;
@@ -56,13 +58,14 @@ public class OrderService
             var status = Enum.Parse<Status>(order.Status.ToString());
             if (order.User != null)
                 publicOrders.Add(
-                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
+                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline,
+                        order.Sum));
         }
 
         return publicOrders;
     }
 
-    public async Task<PublicOrderData> CreateOrder(int userId, CreateOrderDto orderDto)
+    public async Task<PublicOrderData> CreateOrder(int userId, ServiceCreateOrderDto orderDto)
     {
         DateOnly deadline;
         try
@@ -83,10 +86,13 @@ public class OrderService
             .ToListAsync();
         if (products.Count < 1) throw new ServiceBadRequestError((nameof(orderDto.ProductsId), "Invalid products id"));
 
+        double sum = 0;
+        products.ForEach(p => { sum += p.Price; });
         var order = new Order(deadline)
         {
             User = user,
-            Products = products
+            Products = products,
+            Sum = sum
         };
         await _appDbContext.Orders.AddAsync(order);
         await _appDbContext.SaveChangesAsync();
@@ -97,11 +103,12 @@ public class OrderService
             order.User.Id,
             order.Products,
             status.ToString(),
-            order.Deadline);
+            order.Deadline,
+            order.Sum);
         return publicOrder;
     }
 
-    public async Task<PublicOrderData> UpdateOrderStatus(int id, UpdateOrderStatusDto dto)
+    public async Task<PublicOrderData> UpdateOrderStatus(int id, ServiceUpdateOrderDto dto)
     {
         var candidate = await _appDbContext.Orders
             .Include(o => o.User)
@@ -122,7 +129,8 @@ public class OrderService
                 candidate.User.Id,
                 candidate.Products.ToList(),
                 newStatus.ToString(),
-                candidate.Deadline);
+                candidate.Deadline,
+                candidate.Sum);
             return publicOrderData;
         }
 

@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Zefir.Core.Entity;
 
-namespace Zefir.DAL.Interfaces;
+namespace Zefir.BL.Abstractions;
 
 public interface ITokenService
 {

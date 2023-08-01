@@ -1,10 +1,11 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zefir.API.Contracts.Orders;
+using Zefir.BL.Contracts;
+using Zefir.BL.Services;
 using Zefir.Core.Entity;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
-using Zefir.DAL.Services;
+using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
 
@@ -87,7 +88,7 @@ public class OrdersController : ControllerBase
     /// <summary>
     /// User create order with product
     /// </summary>
-    /// <param name="dto">Data<see cref="CreateOrderDto"/></param>
+    /// <param name="dto">Data<see cref="Contracts.Orders.CreateOrderDto"/></param>
     /// <returns></returns>
     [HttpPost("", Name = CreateOrderRouteName)]
     [Authorize]
@@ -99,7 +100,8 @@ public class OrdersController : ControllerBase
             if (userIdClaim is null) return Unauthorized();
 
             var userId = int.Parse(userIdClaim.Value);
-            var newOrder = await _orderService.CreateOrder(userId, dto);
+            var serviceDto = new ServiceCreateOrderDto(dto.ProductsId, dto.Deadline);
+            var newOrder = await _orderService.CreateOrder(userId, serviceDto);
             return CreatedAtRoute(CreateOrderRouteName, new { newOrder.Id }, newOrder);
         }
         catch (ServiceBadRequestError e)
@@ -117,11 +119,12 @@ public class OrdersController : ControllerBase
     /// <returns></returns>
     [HttpPut("{id:int}", Name = UpdateOrderStatus)]
     [Authorize(Roles = Role.AdminRole)]
-    public async Task<IActionResult> UpdateOrder(int id, UpdateOrderStatusDto dto)
+    public async Task<IActionResult> UpdateOrder(int id, UpdateOrderDto dto)
     {
         try
         {
-            var result = await _orderService.UpdateOrderStatus(id, dto);
+            var serviceDto = new ServiceUpdateOrderDto(dto.Status);
+            var result = await _orderService.UpdateOrderStatus(id, serviceDto);
             return Ok(result);
         }
         catch (ServiceBadRequestError e)

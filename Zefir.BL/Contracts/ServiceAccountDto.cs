@@ -1,8 +1,8 @@
-﻿namespace Zefir.DAL.Dto;
+﻿namespace Zefir.BL.Contracts;
 
-public record AccountDto(string Email, string Password);
+public record ServiceAccountDto(string Email, string Password);
 
-public record RegisterDto(
+public record ServiceRegisterDto(
     string Name,
     string Surname,
     string Phone,
@@ -19,4 +19,3 @@ public record PublicAccountDataDto(
     string? RefreshToken,
     List<string>? Errors);
 
-public record RefreshDto(string RefreshToken);

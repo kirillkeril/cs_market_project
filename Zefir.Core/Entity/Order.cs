@@ -8,6 +8,7 @@ public class Order
     public int Status { get; set; }
     public DateTime CreatedAt { get; }
     public DateOnly Deadline { get; set; }
+    public double Sum { get; set; }
 
     public Order(DateOnly deadline)
     {

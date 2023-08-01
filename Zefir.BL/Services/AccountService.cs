@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Zefir.BL.Abstractions;
+using Zefir.BL.Contracts;
 using Zefir.Core.Entity;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
-using Zefir.DAL.Interfaces;
+using Zefir.Core.Errors;
+using Zefir.DAL;
 
-namespace Zefir.DAL.Services;
+namespace Zefir.BL.Services;
 
 public class AccountService
 {
@@ -40,9 +41,9 @@ public class AccountService
     /// <summary>
     ///     Get user data for new user
     /// </summary>
-    /// <param name="dto">Data for registration <see cref="RegisterDto" /></param>
+    /// <param name="dto">Data for registration <see cref="ServiceRegisterDto" /></param>
     /// <returns>Null if user exists or <see cref="PublicAccountDataDto" /></returns>
-    public async Task<PublicAccountDataDto> Register(RegisterDto dto)
+    public async Task<PublicAccountDataDto> Register(ServiceRegisterDto dto)
     {
         var errors = new List<string>();
         if (!string.IsNullOrWhiteSpace(dto.Password) && !dto.Password.Equals(dto.PasswordConfirm))
@@ -79,7 +80,7 @@ public class AccountService
         return new PublicAccountDataDto(userData, token, refreshToken, null);
     }
 
-    public async Task<PublicAccountDataDto> Login(AccountDto dto)
+    public async Task<PublicAccountDataDto> Login(ServiceAccountDto dto)
     {
         var errors = new List<string>();
 
@@ -109,7 +110,7 @@ public class AccountService
         return new PublicAccountDataDto(null, null, null, errors);
     }
 
-    public async Task<bool> DeleteAccount(AccountDto dto)
+    public async Task<bool> DeleteAccount(ServiceAccountDto dto)
     {
         var candidate = await _appContext.Users.FirstOrDefaultAsync(
             u =>

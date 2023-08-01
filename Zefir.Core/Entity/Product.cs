@@ -9,11 +9,13 @@ public class Product
     public DateTime CreatedAt { get; }
     public string? ImageFilePath { get; set; }
     public Category Category { get; set; } = null!;
+    public double Price { get; set; }
 
-    public Product(string name, string description, string? imageFilePath)
+    public Product(string name, string description, double price, string? imageFilePath)
     {
         Name = name;
         Description = description;
+        Price = price;
         ImageFilePath = imageFilePath;
         CreatedAt = DateTime.Now;
     }

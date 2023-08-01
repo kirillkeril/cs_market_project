@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Zefir.BL.Contracts;
 using Zefir.Core.Entity;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
+using Zefir.Core.Errors;
+using Zefir.DAL;
 
-namespace Zefir.DAL.Services;
+namespace Zefir.BL.Services;
 
 public class ProductService
 {
@@ -26,7 +27,8 @@ public class ProductService
         {
             var characteristics = new Dictionary<string, string>();
             foreach (var c in p.Characteristics) characteristics.Add(c.Key, c.Value);
-            var productData = new PublicProductData(p.Id, p.Name, p.Description, p.Category.Name, characteristics);
+            var productData =
+                new PublicProductData(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics);
             publicProductData.Add(productData);
         }
 
@@ -53,7 +55,8 @@ public class ProductService
         {
             var characteristics = new Dictionary<string, string>();
             foreach (var c in p.Characteristics) characteristics.Add(c.Key, c.Value);
-            var productData = new PublicProductData(p.Id, p.Name, p.Description, p.Category.Name, characteristics);
+            var productData =
+                new PublicProductData(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics);
             publicProductData.Add(productData);
         }
 
@@ -65,10 +68,10 @@ public class ProductService
         return await _appDbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<PublicProductData?> CreateProduct(CreateProductDto dto)
+    public async Task<PublicProductData?> CreateProduct(ServiceCreateProductDto dto)
     {
         //TODO make image file path
-        var newProduct = new Product(dto.Name, dto.Description, "");
+        var newProduct = new Product(dto.Name, dto.Description, dto.Price, "");
         try
         {
             foreach (var characteristic in dto.Characteristics)
@@ -97,11 +100,11 @@ public class ProductService
             characteristics.Add(characteristic.Key, characteristic.Value);
 
         var publicProductData = new PublicProductData(newProduct.Id, newProduct.Name, newProduct.Description,
-            newProduct.Category.Name, characteristics);
+            newProduct.Category.Name, dto.Price, characteristics);
         return publicProductData;
     }
 
-    public async Task<PublicProductData> UpdateProduct(int id, UpdateProductDto dto)
+    public async Task<PublicProductData> UpdateProduct(int id, ServiceUpdateProductDto dto)
     {
         var product = await _appDbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
         if (product is null) throw new ServiceNotFoundError("Product not found");
@@ -128,6 +131,7 @@ public class ProductService
             characteristics.Add(characteristic.Key, characteristic.Value);
         var publicProductData = new PublicProductData(product.Id, product.Name, product.Description,
             product.Category.Name,
+            product.Price,
             characteristics);
 
         return publicProductData;

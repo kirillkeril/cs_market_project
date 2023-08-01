@@ -10,15 +10,16 @@ public class User
     private string _phone;
     private string _email;
     private string _hashedPassword;
-    private string? _refreshToken;
+    private double? _sale;
 
-    public User(string name, string surname, string phone, string email, string hashedPassword)
+    public User(string name, string surname, string phone, string email, string hashedPassword, double? sale = 0)
     {
         _name = name;
         _surname = surname;
         _phone = phone;
         _email = email;
         _hashedPassword = hashedPassword;
+        _sale = sale;
     }
 
     public string Name
@@ -72,11 +73,7 @@ public class User
         }
     }
 
-    public string? RefreshToken
-    {
-        get => _refreshToken;
-        set => _refreshToken = value;
-    }
+    public string? RefreshToken { get; set; }
 
-    public Role Role { get; set; }
+    public Role Role { get; set; } = null!;
 }

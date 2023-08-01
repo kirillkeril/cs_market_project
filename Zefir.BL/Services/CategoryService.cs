@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Zefir.BL.Contracts;
 using Zefir.Core.Entity;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
+using Zefir.Core.Errors;
+using Zefir.DAL;
 
-namespace Zefir.DAL.Services;
+namespace Zefir.BL.Services;
 
 public class CategoryService
 {
@@ -27,7 +28,7 @@ public class CategoryService
         return category;
     }
 
-    public async Task<Category> CreateNewCategory(CreateCategoryDto dto)
+    public async Task<Category> CreateNewCategory(ServiceCreateCategoryDto dto)
     {
         var candidate = await _appDbContext.Categories.FirstOrDefaultAsync(c => c.Name.Equals(dto.Name));
         if (candidate is not null) throw new ServiceBadRequestError(("Name", "Error with such name already exists"));
@@ -40,7 +41,7 @@ public class CategoryService
         return candidate;
     }
 
-    public async Task<Category> UpdateCategory(string name, CreateCategoryDto dto)
+    public async Task<Category> UpdateCategory(string name, ServiceUpdateCategoryDto dto)
     {
         var errors = new List<(string, string)>();
         var candidate = await _appDbContext.Categories.FirstOrDefaultAsync(c => c.Name.Equals(name));

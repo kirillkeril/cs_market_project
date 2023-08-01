@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
-using Zefir.DAL.Services;
+using Zefir.API.Contracts.Accounts;
+using Zefir.BL.Contracts;
+using Zefir.BL.Services;
 using Zefir.Core.Entity;
+using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
 
@@ -12,7 +13,7 @@ namespace Zefir.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class AccountController : ControllerBase
+public class AccountsController : ControllerBase
 {
     private const string RegisterRouteName = "register";
     private const string LoginRouteName = "login";
@@ -28,7 +29,7 @@ public class AccountController : ControllerBase
     /// </summary>
     /// <param email="accountService"></param>
     /// <param name="accountService"></param>
-    public AccountController(AccountService accountService)
+    public AccountsController(AccountService accountService)
     {
         _accountService = accountService;
     }
@@ -97,15 +98,22 @@ public class AccountController : ControllerBase
     /// <summary>
     ///     Gets data and add new user
     /// </summary>
-    /// <param name="dto">User fields <see cref="RegisterDto" /></param>
+    /// <param name="dto">User fields <see cref="ServiceRegisterDto" /></param>
     /// <returns>User and jwt token OR list of errors <see cref="PublicAccountDataDto" /></returns>
     [HttpPost("register", Name = RegisterRouteName)]
     [AllowAnonymous]
-    public async Task<IActionResult> Register(RegisterDto dto)
+    public async Task<IActionResult> Register(CreateAccountDto dto)
     {
         try
         {
-            var result = await _accountService.Register(dto);
+            var serviceContract = new ServiceRegisterDto(
+                dto.Name,
+                dto.Surname,
+                dto.Phone,
+                dto.Email,
+                dto.Password,
+                dto.PasswordConfirm);
+            var result = await _accountService.Register(serviceContract);
             if (result.Errors is not null) return BadRequest(new { result.Errors });
             return Ok(result);
         }
@@ -118,15 +126,16 @@ public class AccountController : ControllerBase
     /// <summary>
     ///     Login with email and password
     /// </summary>
-    /// <param name="dto">Login data <see cref="AccountDto" /></param>
-    /// <returns>User and token OR list of errors <see cref="AccountDto" /></returns>
+    /// <param name="dto">Login data <see cref="ServiceAccountDto" /></param>
+    /// <returns>User and token OR list of errors <see cref="ServiceAccountDto" /></returns>
     [HttpPost("login", Name = LoginRouteName)]
     [AllowAnonymous]
-    public async Task<IActionResult> Login(AccountDto dto)
+    public async Task<IActionResult> Login(LoginDto dto)
     {
         try
         {
-            var result = await _accountService.Login(dto);
+            var serviceContract = new ServiceAccountDto(dto.Email, dto.Password);
+            var result = await _accountService.Login(serviceContract);
             if (result.Errors is not null) return Unauthorized(new { result.Errors });
             return Ok(result);
         }
@@ -143,11 +152,12 @@ public class AccountController : ControllerBase
     /// <returns>Bad request if users not found OR no content if user deleted</returns>
     [HttpDelete("delete", Name = DeleteAccountRouteName)]
     [Authorize]
-    public async Task<IActionResult> DeleteAccount(AccountDto dto)
+    public async Task<IActionResult> DeleteAccount(DeleteAccountDto dto)
     {
         try
         {
-            var result = await _accountService.DeleteAccount(dto);
+            var serviceContract = new ServiceAccountDto(dto.Email, dto.Password);
+            var result = await _accountService.DeleteAccount(serviceContract);
             if (result == false) return BadRequest();
             return NoContent();
         }
@@ -182,10 +192,10 @@ public class AccountController : ControllerBase
     ///     Return new pair of access and refresh tokens;
     /// </summary>
     /// <param name="refreshToken">User's refresh token</param>
-    /// <returns>Unauthorized with list of errors OR login data <see cref="AccountDto" /></returns>
+    /// <returns>Unauthorized with list of errors OR login data <see cref="ServiceAccountDto" /></returns>
     [AllowAnonymous]
     [HttpPost("refresh", Name = RefreshTokenRouteName)]
-    public async Task<IActionResult> RefreshToken(RefreshDto refreshToken)
+    public async Task<IActionResult> RefreshToken(RefreshAccessTokenDto refreshToken)
     {
         try
         {

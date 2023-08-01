@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
-using Zefir.DAL.Services;
+using Zefir.API.Contracts.Categories;
+using Zefir.BL.Contracts;
+using Zefir.BL.Services;
 using Zefir.Core.Entity;
+using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
 
@@ -69,11 +70,11 @@ public class CategoriesController : ControllerBase
     /// <summary>
     /// Creates new category (admin only)
     /// </summary>
-    /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
+    /// <param name="dto">Data <see cref="ServiceCreateCategoryDto"/></param>
     /// <returns>201 with created at or 400 with errors or 500 with errors</returns>
     [HttpPost("", Name = CreateNewRouteName)]
     [Authorize(Roles = Role.AdminRole)]
-    public async Task<IActionResult> Create(CreateCategoryDto dto)
+    public async Task<IActionResult> Create(ServiceCreateCategoryDto dto)
     {
         try
         {
@@ -95,15 +96,16 @@ public class CategoriesController : ControllerBase
     /// Updates category (admin only)
     /// </summary>
     /// <param name="name">string name of category</param>
-    /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
+    /// <param name="dto">Data <see cref="ServiceCreateCategoryDto"/></param>
     /// <returns>200 with updated object or 400 with errors or 404 with errors or 500 with errors</returns>
     [HttpPut("{name}", Name = UpdateNewRouteName)]
     [Authorize(Roles = Role.AdminRole)]
-    public async Task<IActionResult> Update(string name, CreateCategoryDto dto)
+    public async Task<IActionResult> Update(string name, UpdateCategoryDto dto)
     {
         try
         {
-            var result = await _categoryService.UpdateCategory(name, dto);
+            var serviceContract = new ServiceUpdateCategoryDto(dto.Name, dto.Description);
+            var result = await _categoryService.UpdateCategory(name, serviceContract);
             return Ok(result);
         }
         catch (ServiceNotFoundError e)

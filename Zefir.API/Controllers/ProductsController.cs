@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zefir.API.Contracts.Products;
+using Zefir.BL.Contracts;
+using Zefir.BL.Services;
 using Zefir.Core.Entity;
-using Zefir.DAL.Dto;
-using Zefir.DAL.Errors;
-using Zefir.DAL.Services;
+using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
 
@@ -64,14 +65,16 @@ public class ProductController : ControllerBase
     /// <summary>
     ///     Creates new product (admin only)
     /// </summary>
-    /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
+    /// <param name="dto">Data <see cref="ServiceCreateCategoryDto"/></param>
     [HttpPost(Name = CreateProductRouteName)]
     [Authorize(Roles = Role.AdminRole)]
     public async Task<ActionResult> CreateProduct(CreateProductDto dto)
     {
         try
         {
-            var newProduct = await _productService.CreateProduct(dto);
+            var serviceContract = new ServiceCreateProductDto(dto.Name, dto.Description, dto.CategoryName, dto.Price,
+                dto.Characteristics);
+            var newProduct = await _productService.CreateProduct(serviceContract);
             if (newProduct != null)
             {
                 return CreatedAtRoute(GetByIdRouteName, new { newProduct.Id }, newProduct);
@@ -101,7 +104,10 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var updatedProduct = await _productService.UpdateProduct(id, dto);
+            var serviceContract = new ServiceUpdateProductDto(dto.Name, dto.Description, dto.CategoryName, dto.Price,
+                dto
+                    .Characteristics);
+            var updatedProduct = await _productService.UpdateProduct(id, serviceContract);
             return Ok(new { result = updatedProduct });
         }
         catch (ServiceBadRequestError e)

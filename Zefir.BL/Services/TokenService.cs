@@ -4,10 +4,10 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Zefir.BL.Abstractions;
 using Zefir.Core.Entity;
-using Zefir.DAL.Interfaces;
 
-namespace Zefir.DAL.Services;
+namespace Zefir.BL.Services;
 
 public class TokenService : ITokenService
 {
