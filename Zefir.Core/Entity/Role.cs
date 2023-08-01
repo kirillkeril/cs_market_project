@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Zefir.Domain.Entity;
+namespace Zefir.Core.Entity;
 
 public class Role
 {

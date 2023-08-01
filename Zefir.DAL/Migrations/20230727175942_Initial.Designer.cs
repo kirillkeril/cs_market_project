@@ -25,7 +25,7 @@ namespace Zefir.DAL.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Zefir.Domain.Entity.Characteristics", b =>
+            modelBuilder.Entity("Zefir.Core.Entity.Characteristics", b =>
                 {
                     b.Property<int>("CharacteristicsId")
                         .ValueGeneratedOnAdd()
@@ -51,7 +51,7 @@ namespace Zefir.DAL.Migrations
                     b.ToTable("Characteristics");
                 });
 
-            modelBuilder.Entity("Zefir.Domain.Entity.Product", b =>
+            modelBuilder.Entity("Zefir.Core.Entity.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,7 +72,7 @@ namespace Zefir.DAL.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("Zefir.Domain.Entity.User", b =>
+            modelBuilder.Entity("Zefir.Core.Entity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -108,14 +108,14 @@ namespace Zefir.DAL.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Zefir.Domain.Entity.Characteristics", b =>
+            modelBuilder.Entity("Zefir.Core.Entity.Characteristics", b =>
                 {
-                    b.HasOne("Zefir.Domain.Entity.Product", null)
+                    b.HasOne("Zefir.Core.Entity.Product", null)
                         .WithMany("Characteristics")
                         .HasForeignKey("ProductId");
                 });
 
-            modelBuilder.Entity("Zefir.Domain.Entity.Product", b =>
+            modelBuilder.Entity("Zefir.Core.Entity.Product", b =>
                 {
                     b.Navigation("Characteristics");
                 });

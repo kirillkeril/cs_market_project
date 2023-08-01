@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
-using Zefir.Domain.Entity;
+using Zefir.Core.Entity;
 
-namespace Zefir.Infrastructure.Controllers;
+namespace Zefir.API.Controllers;
 
 /// <summary>
 /// Accounts api controller

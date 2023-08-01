@@ -1,12 +1,12 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zefir.Core.Entity;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
-using Zefir.Domain.Entity;
 
-namespace Zefir.Infrastructure.Controllers;
+namespace Zefir.API.Controllers;
 
 /// <summary>
 ///     Operations with Order entity (authorize only)

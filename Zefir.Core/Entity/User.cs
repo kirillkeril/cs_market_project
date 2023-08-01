@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Zefir.Domain.Entity;
+namespace Zefir.Core.Entity;
 
 public class User
 {

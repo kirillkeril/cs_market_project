@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Zefir.Core.Entity;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
-using Zefir.Domain.Entity;
 
 namespace Zefir.DAL.Services;
 

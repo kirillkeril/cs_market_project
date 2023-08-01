@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Zefir.Domain.Entity;
+using Zefir.Core.Entity;
 
 namespace Zefir.DAL.Interfaces;
 

@@ -1,4 +1,4 @@
-﻿namespace Zefir.Domain.Entity;
+﻿namespace Zefir.Core.Entity;
 
 public class Category
 {

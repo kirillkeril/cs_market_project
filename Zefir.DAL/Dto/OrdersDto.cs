@@ -1,4 +1,4 @@
-﻿using Zefir.Domain.Entity;
+﻿using Zefir.Core.Entity;
 
 namespace Zefir.DAL.Dto;
 
