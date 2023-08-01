@@ -77,4 +77,6 @@ public class User
         get => _refreshToken;
         set => _refreshToken = value;
     }
+
+    public Role Role { get; set; }
 }

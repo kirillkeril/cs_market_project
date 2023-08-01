@@ -11,8 +11,12 @@ public record RegisterDto(
     string PasswordConfirm
 );
 
-public record UserDataDto(string Name, string Surname, string Phone, string Email);
+public record PublicUserData(int Id, string Name, string Surname, string Phone, string Email, string Role);
 
-public record AccountResponseDto(UserDataDto? User, string? Token, string? RefreshToken, List<string>? Errors);
+public record PublicAccountDataDto(
+    PublicUserData? User,
+    string? Token,
+    string? RefreshToken,
+    List<string>? Errors);
 
 public record RefreshDto(string RefreshToken);

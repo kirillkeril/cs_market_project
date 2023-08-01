@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
+using Zefir.Domain.Entity;
 
 namespace Zefir.Infrastructure.Controllers;
 
 /// <summary>
 ///  CRUD operations with products (admin only)
 /// </summary>
-[Authorize]
+[Authorize(Roles = Role.AdminRole)]
 [ApiController]
 [Route("[controller]")]
 public class ProductController : ControllerBase
@@ -65,6 +66,7 @@ public class ProductController : ControllerBase
     /// </summary>
     /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
     [HttpPost(Name = CreateProductRouteName)]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<ActionResult> CreateProduct(CreateProductDto dto)
     {
         try
@@ -94,6 +96,7 @@ public class ProductController : ControllerBase
     /// <param name="dto">Data to update</param>
     /// <returns>Updated product</returns>
     [HttpPut("{id:int}", Name = UpdateProductRouteName)]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto dto)
     {
         try
@@ -121,6 +124,7 @@ public class ProductController : ControllerBase
     /// <param name="id">integer id</param>
     /// <returns>Ok OR 404 OR 500 with errors</returns>
     [HttpDelete("{id:int}", Name = DeleteProductRouteName)]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> DeleteProduct(int id)
     {
         try

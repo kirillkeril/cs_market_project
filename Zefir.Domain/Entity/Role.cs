@@ -1,6 +1,16 @@
-﻿namespace Zefir.Domain.Entity;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Zefir.Domain.Entity;
 
 public class Role
 {
-    public string? Name { get; set; }
+    [NotMapped] public const string UserRole = "user";
+    [NotMapped] public const string AdminRole = "admin";
+    [Key] public string Name { get; set; }
+
+    public Role(string name)
+    {
+        Name = name;
+    }
 }

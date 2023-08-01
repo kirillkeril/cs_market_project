@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
+using Zefir.Domain.Entity;
 
 namespace Zefir.Infrastructure.Controllers;
 
@@ -71,7 +72,7 @@ public class CategoriesController : ControllerBase
     /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
     /// <returns>201 with created at or 400 with errors or 500 with errors</returns>
     [HttpPost("", Name = CreateNewRouteName)]
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> Create(CreateCategoryDto dto)
     {
         try
@@ -97,7 +98,7 @@ public class CategoriesController : ControllerBase
     /// <param name="dto">Data <see cref="CreateCategoryDto"/></param>
     /// <returns>200 with updated object or 400 with errors or 404 with errors or 500 with errors</returns>
     [HttpPut("{name}", Name = UpdateNewRouteName)]
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> Update(string name, CreateCategoryDto dto)
     {
         try
@@ -125,7 +126,7 @@ public class CategoriesController : ControllerBase
     /// <param name="name">string name</param>
     /// <returns>204 no content OR 404 OR 500 with errors</returns>
     [HttpDelete("{name}", Name = DeleteRouteName)]
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> Delete(string name)
     {
         try

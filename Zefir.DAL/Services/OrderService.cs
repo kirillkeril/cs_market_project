@@ -5,7 +5,6 @@ using Zefir.Domain.Entity;
 
 namespace Zefir.DAL.Services;
 
-// TODO сделать заказы
 public class OrderService
 {
     private readonly AppDbContext _appDbContext;
@@ -27,7 +26,7 @@ public class OrderService
             orders = await _appDbContext.Orders
                 .Include(o => o.User)
                 .Include(o => o.Products)
-                .Where(o => o.User.Id == userId)
+                .Where(o => o.User != null && o.User.Id == userId)
                 .ToListAsync();
 
         var publicOrders = new List<PublicOrderData>();
@@ -35,8 +34,9 @@ public class OrderService
         foreach (var order in orders)
         {
             var status = Enum.Parse<Status>(order.Status.ToString());
-            publicOrders.Add(
-                new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
+            if (order.User != null)
+                publicOrders.Add(
+                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
         }
 
         return publicOrders;
@@ -47,15 +47,16 @@ public class OrderService
         var orders = await _appDbContext.Orders
             .Include(o => o.Products)
             .Include(o => o.User)
-            .Where(o => o.User.Id == ownerId)
+            .Where(o => o.User != null && o.User.Id == ownerId)
             .ToListAsync();
 
         List<PublicOrderData> publicOrders = new();
         foreach (var order in orders)
         {
             var status = Enum.Parse<Status>(order.Status.ToString());
-            publicOrders.Add(
-                new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
+            if (order.User != null)
+                publicOrders.Add(
+                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline));
         }
 
         return publicOrders;
@@ -114,12 +115,17 @@ public class OrderService
         if (!Enum.TryParse(candidate.Status.ToString(), out Status newStatus))
             throw new ServiceBadRequestError((nameof(dto.Status), "Invalid status"));
 
-        var publicOrderData = new PublicOrderData(
-            candidate.Id,
-            candidate.User.Id,
-            candidate.Products.ToList(),
-            newStatus.ToString(),
-            candidate.Deadline);
-        return publicOrderData;
+        if (candidate.User != null)
+        {
+            var publicOrderData = new PublicOrderData(
+                candidate.Id,
+                candidate.User.Id,
+                candidate.Products.ToList(),
+                newStatus.ToString(),
+                candidate.Deadline);
+            return publicOrderData;
+        }
+
+        throw new ServiceNotFoundError("User is undefined");
     }
 }

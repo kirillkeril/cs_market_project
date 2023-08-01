@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
+using Zefir.Domain.Entity;
 
 namespace Zefir.Infrastructure.Controllers;
 
@@ -35,7 +36,7 @@ public class OrdersController : ControllerBase
     /// <param name="userId"></param>
     /// <returns></returns>
     [HttpGet("all", Name = GetAllOrderRouteName)]
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> GetAllOrders([FromQuery] int? userId)
     {
         try
@@ -89,6 +90,7 @@ public class OrdersController : ControllerBase
     /// <param name="dto">Data<see cref="CreateOrderDto"/></param>
     /// <returns></returns>
     [HttpPost("", Name = CreateOrderRouteName)]
+    [Authorize]
     public async Task<IActionResult> CreateOrder(CreateOrderDto dto)
     {
         try
@@ -114,6 +116,7 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpPut("{id:int}", Name = UpdateOrderStatus)]
+    [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> UpdateOrder(int id, UpdateOrderStatusDto dto)
     {
         try

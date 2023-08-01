@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Zefir.DAL.Dto;
 using Zefir.DAL.Errors;
 using Zefir.DAL.Services;
+using Zefir.Domain.Entity;
 
 namespace Zefir.Infrastructure.Controllers;
 
@@ -36,7 +37,7 @@ public class AccountController : ControllerBase
     /// Get all users (admin only)
     /// </summary>
     /// <returns>204 OR 200 with users</returns>
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
@@ -50,7 +51,7 @@ public class AccountController : ControllerBase
     /// </summary>
     /// <param name="id">integer id</param>
     /// <returns>200 with user OR 404 with errors OR 500 with errors</returns>
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -74,7 +75,7 @@ public class AccountController : ControllerBase
     /// </summary>
     /// <param name="email">string email</param>
     /// <returns>Ok with user OR 404 with errors OR 500 with errors</returns>
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     [HttpGet("{email}")]
     public async Task<IActionResult> GetByEmail(string email)
     {
@@ -97,7 +98,7 @@ public class AccountController : ControllerBase
     ///     Gets data and add new user
     /// </summary>
     /// <param name="dto">User fields <see cref="RegisterDto" /></param>
-    /// <returns>User and jwt token OR list of errors <see cref="AccountResponseDto" /></returns>
+    /// <returns>User and jwt token OR list of errors <see cref="PublicAccountDataDto" /></returns>
     [HttpPost("register", Name = RegisterRouteName)]
     [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterDto dto)
@@ -141,6 +142,7 @@ public class AccountController : ControllerBase
     /// <param name="dto">Login data</param>
     /// <returns>Bad request if users not found OR no content if user deleted</returns>
     [HttpDelete("delete", Name = DeleteAccountRouteName)]
+    [Authorize]
     public async Task<IActionResult> DeleteAccount(AccountDto dto)
     {
         try
@@ -160,7 +162,7 @@ public class AccountController : ControllerBase
     /// </summary>
     /// <param name="id">integer id</param>
     /// <returns>204 OR 404 OR 500 with errors</returns>
-    [Authorize]
+    [Authorize(Roles = Role.AdminRole)]
     [HttpDelete("delete/{id:int}", Name = DeleteAccountByIdRouteName)]
     public async Task<IActionResult> DeleteById(int id)
     {
@@ -206,6 +208,7 @@ public class AccountController : ControllerBase
     /// </summary>
     /// <returns>NoContent or BadRequest</returns>
     [HttpPatch("logout", Name = LogoutRouteName)]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         try

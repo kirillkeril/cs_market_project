@@ -29,6 +29,7 @@ public class TokenService : ITokenService
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, user.Email),
+            new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.Name),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Surname, user.Surname),
             new Claim(ClaimTypes.Email, user.Email)
