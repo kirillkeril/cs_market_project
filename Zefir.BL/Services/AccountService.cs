@@ -49,7 +49,8 @@ public class AccountService
         if (!string.IsNullOrWhiteSpace(dto.Password) && !dto.Password.Equals(dto.PasswordConfirm))
             errors.Add("Password is not confirmed");
 
-        var candidate = await _appContext.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        var candidate = await _appContext.Users.Include(user => user.Role)
+            .FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (candidate is not null) errors.Add("User already exists");
 
         if (errors.Count > 0) return new PublicAccountDataDto(null, null, null, errors);
@@ -77,6 +78,8 @@ public class AccountService
             candidate.Email,
             candidate.Role.Name
         );
+        await _appContext.Baskets.AddAsync(new Basket { User = candidate });
+        await _appContext.SaveChangesAsync();
         return new PublicAccountDataDto(userData, token, refreshToken, null);
     }
 
@@ -138,7 +141,8 @@ public class AccountService
         var username = principal.Identity?.Name;
         if (username is null) errors.Add("Unauthorized");
 
-        var user = await _appContext.Users.FirstOrDefaultAsync(u => u.Email.Equals(username));
+        var user = await _appContext.Users.Include(user => user.Role)
+            .FirstOrDefaultAsync(u => u.Email.Equals(username));
         if (user is null || user.RefreshToken != refreshToken)
         {
             errors.Add("Invalid token");

@@ -16,9 +16,5 @@ public sealed class AppDbContext : DbContext
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
-
-    /// <inheritdoc />
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-    }
+    public DbSet<Basket> Baskets { get; set; } = null!;
 }

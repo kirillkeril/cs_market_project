@@ -30,6 +30,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<BasketService>();
 
 // Authentication and authorization
 builder.Services.AddAuthorization();
