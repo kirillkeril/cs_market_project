@@ -85,7 +85,7 @@ public class AccountService
         var errors = new List<string>();
 
         var candidate =
-            await _appContext.Users.FirstOrDefaultAsync(u =>
+            await _appContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u =>
                 u.Email == dto.Email);
         if (
             candidate != null &&

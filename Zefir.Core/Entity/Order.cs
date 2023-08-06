@@ -4,7 +4,7 @@ public class Order
 {
     public int Id { get; set; }
     public User? User { get; set; }
-    public ICollection<Product> Products { get; set; }
+    public ICollection<Product> Products { get; set; } = null!;
     public int Status { get; set; }
     public DateTime CreatedAt { get; }
     public DateOnly Deadline { get; set; }

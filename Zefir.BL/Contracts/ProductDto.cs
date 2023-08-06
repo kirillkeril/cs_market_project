@@ -21,3 +21,5 @@ public record ServiceUpdateProductDto
 public record PublicProductData(int Id, string Name, string Description, string CategoryName, double Price,
     Dictionary<string,
     string> Characteristics);
+
+public record GetAllProductsDto(List<PublicProductData> ProductData, int TotalPages, int CurrentPage);

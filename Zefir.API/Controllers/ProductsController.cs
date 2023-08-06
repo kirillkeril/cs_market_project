@@ -32,19 +32,18 @@ public class ProductController : ControllerBase
     }
 
     /// <summary>
-    ///     Get all products as IQueryable to implement search
+    ///     Get all products by pages
     /// </summary>
+    /// <param name="page">Number of page</param>
     /// <param name="searchQuery">Optional search query</param>
     [HttpGet(Name = GetAllRouteName)]
     [AllowAnonymous]
-    public async Task<ActionResult> GetAll(string? searchQuery = "")
+    public async Task<ActionResult> GetAll(int page, string? searchQuery = "")
     {
-        List<PublicProductData> products;
+        var products = await _productService.GetAllProducts(page);
 
-        if (string.IsNullOrWhiteSpace(searchQuery))
-            products = await _productService.GetAllProducts();
-        else products = await _productService.GetBySearch(searchQuery);
-
+        var totalPages = 0;
+        HttpContext.Response.Headers.Add("X-Total-Count", totalPages.ToString());
         return Ok(products);
     }
 
@@ -67,7 +66,8 @@ public class ProductController : ControllerBase
     /// </summary>
     /// <param name="dto">Data <see cref="ServiceCreateCategoryDto"/></param>
     [HttpPost(Name = CreateProductRouteName)]
-    [Authorize(Roles = Role.AdminRole)]
+    // [Authorize(Roles = Role.AdminRole)]
+    [AllowAnonymous]
     public async Task<ActionResult> CreateProduct(CreateProductDto dto)
     {
         try

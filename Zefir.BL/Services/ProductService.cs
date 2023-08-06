@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Zefir.BL.Contracts;
+using Zefir.Common.Helpers;
 using Zefir.Core.Entity;
 using Zefir.Core.Errors;
 using Zefir.DAL;
@@ -9,33 +10,15 @@ namespace Zefir.BL.Services;
 public class ProductService
 {
     private readonly AppDbContext _appDbContext;
+    private readonly PaginationHelper _pagination;
 
     public ProductService(AppDbContext appDbContext)
     {
         _appDbContext = appDbContext;
+        _pagination = new PaginationHelper(10);
     }
 
-    public async Task<List<PublicProductData>> GetAllProducts()
-    {
-        var products = await _appDbContext.Products
-            .Include(p => p.Characteristics)
-            .Include(p => p.Category)
-            .ToListAsync();
-
-        var publicProductData = new List<PublicProductData>();
-        foreach (var p in products)
-        {
-            var characteristics = new Dictionary<string, string>();
-            foreach (var c in p.Characteristics) characteristics.Add(c.Key, c.Value);
-            var productData =
-                new PublicProductData(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics);
-            publicProductData.Add(productData);
-        }
-
-        return publicProductData;
-    }
-
-    public async Task<List<PublicProductData>> GetBySearch(string search)
+    public async Task<GetAllProductsDto> GetAllProducts(int page = 0, string search = "")
     {
         var products = _appDbContext.Products.Where(
             p =>
@@ -43,9 +26,13 @@ public class ProductService
                 p.Description.Contains(search) ||
                 p.Category.Description.Contains(search) ||
                 p.Category.Name.Contains(search) ||
-                p.Characteristics.Any(c => c.Value.Contains(search)));
+                p.Characteristics.Any(c => c.Value.Contains(search))
+        );
 
-        var productsData = await products
+        var totalPages = _pagination.ComputeCountOfPages(products.Count());
+        var pagedProducts = _pagination.GetPagedItems(products, page);
+
+        var productsData = await pagedProducts
             .Include(p => p.Category)
             .Include(p => p.Characteristics)
             .ToListAsync();
@@ -60,8 +47,11 @@ public class ProductService
             publicProductData.Add(productData);
         }
 
-        return publicProductData;
+        var productDto = new GetAllProductsDto(publicProductData, totalPages, page);
+
+        return productDto;
     }
+
 
     public async Task<Product?> GetProductById(int id)
     {
@@ -106,7 +96,7 @@ public class ProductService
 
     public async Task<PublicProductData> UpdateProduct(int id, ServiceUpdateProductDto dto)
     {
-        var product = await _appDbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _appDbContext.Products.Include(product => product.Characteristics).FirstOrDefaultAsync(p => p.Id == id);
         if (product is null) throw new ServiceNotFoundError("Product not found");
         product.Name = dto.Name;
         product.Description = dto.Description;

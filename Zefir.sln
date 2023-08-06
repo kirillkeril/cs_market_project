@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zefir.BL", "Zefir.BL\Zefir.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zefir.DAL", "Zefir.DAL\Zefir.DAL.csproj", "{39EB3F89-9BF4-42CE-8B23-897CF31C26A5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zefir.Common", "Zefir.Common\Zefir.Common.csproj", "{4F0E98AF-E0BA-4217-B7DF-11297EFDFCBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{39EB3F89-9BF4-42CE-8B23-897CF31C26A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39EB3F89-9BF4-42CE-8B23-897CF31C26A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39EB3F89-9BF4-42CE-8B23-897CF31C26A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F0E98AF-E0BA-4217-B7DF-11297EFDFCBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F0E98AF-E0BA-4217-B7DF-11297EFDFCBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F0E98AF-E0BA-4217-B7DF-11297EFDFCBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F0E98AF-E0BA-4217-B7DF-11297EFDFCBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
