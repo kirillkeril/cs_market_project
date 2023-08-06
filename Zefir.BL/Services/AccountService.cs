@@ -56,6 +56,7 @@ public class AccountService
         if (errors.Count > 0) return new PublicAccountDataDto(null, null, null, errors);
 
         var refreshToken = _tokenService.BuildRefreshToken();
+
         var userRole = _appContext.Roles.FirstOrDefault(r => r.Name.Equals(Role.UserRole));
         if (userRole is null)
         {
@@ -63,9 +64,16 @@ public class AccountService
             await _appContext.Roles.AddAsync(userRole);
         }
 
+        var adminRole = _appContext.Roles.FirstOrDefault(r => r.Name.Equals(Role.AdminRole));
+        if (adminRole is null)
+        {
+            adminRole = new Role(Role.AdminRole);
+            await _appContext.Roles.AddAsync(adminRole);
+        }
+
         var hashedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password, 10);
         candidate = new User(dto.Name, dto.Surname, dto.Phone, dto.Email, hashedPassword)
-            { RefreshToken = refreshToken, Role = userRole };
+            { RefreshToken = refreshToken, Role = adminRole };
         await _appContext.Users.AddAsync(candidate);
         await _appContext.SaveChangesAsync();
 
