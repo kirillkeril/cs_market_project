@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zefir.API.Contracts.Basket;
-using Zefir.BL.Services;
+using Zefir.BL.Abstractions;
 using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
@@ -13,12 +13,12 @@ namespace Zefir.API.Controllers;
 [Authorize]
 public class BasketController : ControllerBase
 {
-    private readonly BasketService _basketService;
+    private readonly IBasketService _basketService;
 
     /// <summary>
     /// </summary>
     /// <param name="basketService"></param>
-    public BasketController(BasketService basketService)
+    public BasketController(IBasketService basketService)
     {
         _basketService = basketService;
     }

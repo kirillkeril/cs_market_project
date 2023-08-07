@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Zefir.BL.Abstractions;
 using Zefir.BL.Contracts;
 using Zefir.Core.Errors;
 using Zefir.DAL;
 
 namespace Zefir.BL.Services;
 
-public class BasketService
+public class BasketService : IBasketService
 {
     private readonly AppDbContext _appDbContext;
 

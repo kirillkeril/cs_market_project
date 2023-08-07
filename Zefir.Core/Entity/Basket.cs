@@ -3,6 +3,6 @@
 public class Basket
 {
     public int Id { get; set; }
-    public User User { get; init; }
+    public User User { get; init; } = null!;
     public List<Product> Products { get; set; } = null!;
 }

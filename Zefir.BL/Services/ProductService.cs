@@ -10,23 +10,22 @@ namespace Zefir.BL.Services;
 public class ProductService
 {
     private readonly AppDbContext _appDbContext;
-    private readonly PaginationHelper _pagination;
+    private readonly PaginationHelper _pagination = new(10);
 
     public ProductService(AppDbContext appDbContext)
     {
         _appDbContext = appDbContext;
-        _pagination = new PaginationHelper(10);
     }
 
     public async Task<GetAllProductsDto> GetAllProducts(int page = 0, string search = "")
     {
         var products = _appDbContext.Products.Where(
             p =>
-                p.Name.Contains(search) ||
-                p.Description.Contains(search) ||
-                p.Category.Description.Contains(search) ||
-                p.Category.Name.Contains(search) ||
-                p.Characteristics.Any(c => c.Value.Contains(search))
+                p.Characteristics != null && (p.Name.Contains(search) ||
+                                              p.Description.Contains(search) ||
+                                              p.Category.Description.Contains(search) ||
+                                              p.Category.Name.Contains(search) ||
+                                              p.Characteristics.Any(c => c.Value.Contains(search)))
         );
 
         var totalPages = _pagination.ComputeCountOfPages(products.Count());
@@ -41,7 +40,9 @@ public class ProductService
         foreach (var p in productsData)
         {
             var characteristics = new Dictionary<string, string>();
-            foreach (var c in p.Characteristics) characteristics.Add(c.Key, c.Value);
+            if (p.Characteristics != null)
+                foreach (var c in p.Characteristics)
+                    characteristics.Add(c.Key, c.Value);
             var productData =
                 new PublicProductData(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics);
             publicProductData.Add(productData);
@@ -67,7 +68,7 @@ public class ProductService
             foreach (var characteristic in dto.Characteristics)
             {
                 var newCharacteristic = new Characteristics(characteristic.Key, characteristic.Value);
-                newProduct.Characteristics.Add(newCharacteristic);
+                newProduct.Characteristics?.Add(newCharacteristic);
             }
         }
         catch (Exception e)
@@ -82,7 +83,8 @@ public class ProductService
         newProduct.Category = targetCategory;
 
         _appDbContext.Products.Add(newProduct);
-        await _appDbContext.Characteristics.AddRangeAsync(newProduct.Characteristics);
+        await _appDbContext.Characteristics.AddRangeAsync(newProduct.Characteristics ??
+                                                          throw new InvalidOperationException());
         await _appDbContext.SaveChangesAsync();
 
         var characteristics = new Dictionary<string, string>();
@@ -103,10 +105,10 @@ public class ProductService
         foreach (var characteristic in dto.Characteristics)
         {
             var newCharacteristic = new Characteristics(characteristic.Key, characteristic.Value);
-            var possibleCharacteristic = product.Characteristics.Find(c => c.Key == newCharacteristic.Key);
+            var possibleCharacteristic = product.Characteristics?.Find(c => c.Key == newCharacteristic.Key);
 
             if (possibleCharacteristic is not null) possibleCharacteristic.Value = newCharacteristic.Value;
-            else product.Characteristics.Add(newCharacteristic);
+            else product.Characteristics?.Add(newCharacteristic);
         }
 
         var targetCategory = await _appDbContext.Categories.FirstOrDefaultAsync(c =>
@@ -117,8 +119,9 @@ public class ProductService
         await _appDbContext.SaveChangesAsync();
 
         var characteristics = new Dictionary<string, string>();
-        foreach (var characteristic in product.Characteristics)
-            characteristics.Add(characteristic.Key, characteristic.Value);
+        if (product.Characteristics != null)
+            foreach (var characteristic in product.Characteristics)
+                characteristics.Add(characteristic.Key, characteristic.Value);
         var publicProductData = new PublicProductData(product.Id, product.Name, product.Description,
             product.Category.Name,
             product.Price,

@@ -7,7 +7,7 @@ using Zefir.BL.Abstractions;
 using Zefir.BL.Services;
 using Zefir.DAL;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder();
 
 // Add services to the container.
 
@@ -30,7 +30,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<OrderService>();
-builder.Services.AddScoped<BasketService>();
+builder.Services.AddTransient<IBasketService, BasketService>();
 
 // Authentication and authorization
 builder.Services.AddAuthorization();
@@ -68,3 +68,7 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+}

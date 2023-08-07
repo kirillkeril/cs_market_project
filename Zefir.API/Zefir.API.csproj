@@ -15,8 +15,8 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.6.23329.11" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.5.23302.2" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.5">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-preview.1.23111.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-preview.1.23111.4">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -26,6 +26,10 @@
     <ItemGroup>
       <ProjectReference Include="..\Zefir.BL\Zefir.BL.csproj" />
     </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Zefir"/>
+    </ItemGroup>
+
 
 
 </Project>
