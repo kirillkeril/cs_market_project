@@ -4,6 +4,8 @@
     <option name="keyValueStorage">
       <map>
         <entry key="Common:1a72111d-1298-4236-afb3-f5f131b85514:dbContext" value="Zefir.DAL.AppDbContext" />
+        <entry key="Common:39eb3f89-9bf4-42ce-8b23-897cf31c26a5:dbContext" value="Zefir.DAL.AppDbContext" />
+        <entry key="Common:4c495f20-5e80-431a-b6f1-37f840f8fd71:dbContext" value="Zefir.DAL.AppDbContext" />
         <entry key="Common:buildConfiguration" value="Debug" />
         <entry key="Common:noBuild" value="false" />
         <entry key="Common:outputFolder" value="Migrations" />

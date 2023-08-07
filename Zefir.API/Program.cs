@@ -26,10 +26,12 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(filePath);
 });
 // Add db context
+
 builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
 {
-    optionsBuilder.UseNpgsql(builder.Configuration.GetValue<string>("Db_connection"));
+    optionsBuilder.UseNpgsql(builder.Configuration.GetValue<string>("DbConnection"));
 });
+
 builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<IOrderService, OrderService>();
