@@ -1,10 +1,10 @@
-﻿using Zefir.BL.Contracts;
+﻿using Zefir.BL.Contracts.BasketDto;
 
 namespace Zefir.BL.Abstractions;
 
 public interface IBasketService
 {
-    Task<PublicBasketData> GetUsersBasket(int userId);
+    Task<BasketInfoServiceDto> GetUsersBasket(int userId);
     Task AddProductToBasket(int userId, int productId);
 
     Task RemoveProductFromBasket(int userId, int productId);

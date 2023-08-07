@@ -5,11 +5,11 @@ using Moq;
 using Zefir.API.Contracts.Basket;
 using Zefir.API.Controllers;
 using Zefir.BL.Abstractions;
-using Zefir.BL.Contracts;
+using Zefir.BL.Contracts.BasketDto;
 using Zefir.Core.Entity;
 using Zefir.Core.Errors;
 
-namespace Zefir.Tests;
+namespace Zefir.Tests.ControllerTests;
 
 public class BasketControllerTests
 {
@@ -17,10 +17,10 @@ public class BasketControllerTests
     public async Task GetUsersBasket_Should_Return_OK_With_Basket()
     {
         // Arrange
-        var userId = "1"; // Пример идентификатора пользователя
+        var userId = "1";
         var mockBasketService = new Mock<IBasketService>();
         mockBasketService.Setup(s => s.GetUsersBasket(It.IsAny<int>()))
-            .ReturnsAsync(new PublicBasketData(It.IsAny<int>(), new List<Product>()));
+            .ReturnsAsync(new BasketInfoServiceDto(It.IsAny<int>(), new List<Product>()));
         var controller = new BasketController(mockBasketService.Object)
         {
             ControllerContext = new ControllerContext
@@ -41,7 +41,7 @@ public class BasketControllerTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
-        Assert.NotNull(result.Value); // Проверяем, что корзина не равна null или пустая
+        Assert.NotNull(result.Value);
     }
 
     [Fact]
@@ -49,12 +49,14 @@ public class BasketControllerTests
     {
         // Arrange
         var mockBasketService = new Mock<IBasketService>();
-        var controller = new BasketController(mockBasketService.Object);
-        controller.ControllerContext = new ControllerContext
+        var controller = new BasketController(mockBasketService.Object)
         {
-            HttpContext = new DefaultHttpContext
+            ControllerContext = new ControllerContext
             {
-                User = new ClaimsPrincipal()
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal()
+                }
             }
         };
 
@@ -70,20 +72,22 @@ public class BasketControllerTests
     public async Task AddProductToBasket_Should_Return_NoContent_On_Successful_Addition()
     {
         // Arrange
-        var userId = "1"; // Пример идентификатора пользователя
-        var productId = 123; // Пример идентификатора товара
+        var userId = "1";
+        var productId = 123;
         var mockBasketService = new Mock<IBasketService>();
         mockBasketService.Setup(s => s.AddProductToBasket(It.IsAny<int>(), It.IsAny<int>()))
             .Returns(Task.CompletedTask);
-        var controller = new BasketController(mockBasketService.Object);
-        controller.ControllerContext = new ControllerContext
+        var controller = new BasketController(mockBasketService.Object)
         {
-            HttpContext = new DefaultHttpContext
+            ControllerContext = new ControllerContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+                HttpContext = new DefaultHttpContext
                 {
-                    new(ClaimTypes.NameIdentifier, userId)
-                }))
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+                    {
+                        new(ClaimTypes.NameIdentifier, userId)
+                    }))
+                }
             }
         };
         var dto = new AddProductToBasketDto(productId);
@@ -100,20 +104,22 @@ public class BasketControllerTests
     public async Task AddProductToBasket_Should_Return_NotFound_When_ServiceNotFoundError()
     {
         // Arrange
-        var userId = "1"; // Пример идентификатора пользователя
-        var productId = 123; // Пример идентификатора товара
+        var userId = "1";
+        var productId = 123;
         var mockBasketService = new Mock<IBasketService>();
         mockBasketService.Setup(s => s.AddProductToBasket(It.IsAny<int>(), It.IsAny<int>()))
-            .ThrowsAsync(new ServiceNotFoundError("Товар не найден"));
-        var controller = new BasketController(mockBasketService.Object);
-        controller.ControllerContext = new ControllerContext
+            .ThrowsAsync(new ServiceNotFoundError("Product not found"));
+        var controller = new BasketController(mockBasketService.Object)
         {
-            HttpContext = new DefaultHttpContext
+            ControllerContext = new ControllerContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+                HttpContext = new DefaultHttpContext
                 {
-                    new(ClaimTypes.NameIdentifier, userId)
-                }))
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+                    {
+                        new(ClaimTypes.NameIdentifier, userId)
+                    }))
+                }
             }
         };
         var dto = new AddProductToBasketDto(productId);

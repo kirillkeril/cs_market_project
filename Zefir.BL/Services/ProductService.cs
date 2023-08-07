@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Zefir.BL.Contracts;
+using Zefir.BL.Abstractions;
+using Zefir.BL.Contracts.ProductsDto;
 using Zefir.Common.Helpers;
 using Zefir.Core.Entity;
 using Zefir.Core.Errors;
@@ -7,7 +8,7 @@ using Zefir.DAL;
 
 namespace Zefir.BL.Services;
 
-public class ProductService
+public class ProductService : IProductService
 {
     private readonly AppDbContext _appDbContext;
     private readonly PaginationHelper _pagination = new(10);
@@ -17,7 +18,7 @@ public class ProductService
         _appDbContext = appDbContext;
     }
 
-    public async Task<GetAllProductsDto> GetAllProducts(int page = 0, string search = "")
+    public async Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "")
     {
         var products = _appDbContext.Products.Where(
             p =>
@@ -36,7 +37,7 @@ public class ProductService
             .Include(p => p.Characteristics)
             .ToListAsync();
 
-        var publicProductData = new List<PublicProductData>();
+        var publicProductData = new List<ProductInfoServiceDto>();
         foreach (var p in productsData)
         {
             var characteristics = new Dictionary<string, string>();
@@ -44,11 +45,11 @@ public class ProductService
                 foreach (var c in p.Characteristics)
                     characteristics.Add(c.Key, c.Value);
             var productData =
-                new PublicProductData(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics);
+                new ProductInfoServiceDto(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics);
             publicProductData.Add(productData);
         }
 
-        var productDto = new GetAllProductsDto(publicProductData, totalPages, page);
+        var productDto = new ProductsPagesServiceDto(publicProductData, totalPages, page);
 
         return productDto;
     }
@@ -59,7 +60,7 @@ public class ProductService
         return await _appDbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<PublicProductData?> CreateProduct(ServiceCreateProductDto dto)
+    public async Task<ProductInfoServiceDto?> CreateProduct(CreateProductServiceDto dto)
     {
         //TODO make image file path
         var newProduct = new Product(dto.Name, dto.Description, dto.Price, "");
@@ -91,12 +92,12 @@ public class ProductService
         foreach (var characteristic in newProduct.Characteristics)
             characteristics.Add(characteristic.Key, characteristic.Value);
 
-        var publicProductData = new PublicProductData(newProduct.Id, newProduct.Name, newProduct.Description,
+        var publicProductData = new ProductInfoServiceDto(newProduct.Id, newProduct.Name, newProduct.Description,
             newProduct.Category.Name, dto.Price, characteristics);
         return publicProductData;
     }
 
-    public async Task<PublicProductData> UpdateProduct(int id, ServiceUpdateProductDto dto)
+    public async Task<ProductInfoServiceDto> UpdateProduct(int id, UpdateProductServiceDto dto)
     {
         var product = await _appDbContext.Products.Include(product => product.Characteristics).FirstOrDefaultAsync(p => p.Id == id);
         if (product is null) throw new ServiceNotFoundError("Product not found");
@@ -122,7 +123,7 @@ public class ProductService
         if (product.Characteristics != null)
             foreach (var characteristic in product.Characteristics)
                 characteristics.Add(characteristic.Key, characteristic.Value);
-        var publicProductData = new PublicProductData(product.Id, product.Name, product.Description,
+        var publicProductData = new ProductInfoServiceDto(product.Id, product.Name, product.Description,
             product.Category.Name,
             product.Price,
             characteristics);

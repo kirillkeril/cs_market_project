@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Zefir.BL.Abstractions;
-using Zefir.BL.Contracts;
+using Zefir.BL.Contracts.BasketDto;
 using Zefir.Core.Errors;
 using Zefir.DAL;
 
@@ -15,14 +15,14 @@ public class BasketService : IBasketService
         _appDbContext = appDbContext;
     }
 
-    public async Task<PublicBasketData> GetUsersBasket(int userId)
+    public async Task<BasketInfoServiceDto> GetUsersBasket(int userId)
     {
         var basket = await _appDbContext.Baskets
             .Include(b => b.Products)
             .Include(basket => basket.User)
             .FirstOrDefaultAsync(b => b.User.Id == userId);
         if (basket is null) throw new ServiceNotFoundError("No such user");
-        return new PublicBasketData(basket.User.Id, basket.Products);
+        return new BasketInfoServiceDto(basket.User.Id, basket.Products);
     }
 
     public async Task AddProductToBasket(int userId, int productId)

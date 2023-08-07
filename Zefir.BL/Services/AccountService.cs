@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Zefir.BL.Abstractions;
-using Zefir.BL.Contracts;
+using Zefir.BL.Contracts.AccountDto;
 using Zefir.Core.Entity;
 using Zefir.Core.Errors;
 using Zefir.DAL;
 
 namespace Zefir.BL.Services;
 
-public class AccountService
+public class AccountService : IAccountService
 {
     private readonly AppDbContext _appContext;
     private readonly ITokenService _tokenService;
@@ -18,32 +18,40 @@ public class AccountService
         _tokenService = tokenService;
     }
 
-    public async Task<List<User>> GetAllUsers()
+    public async Task<List<UserServiceDto>> GetAllUsers()
     {
-        var users = await _appContext.Users.ToListAsync();
-        return users;
+        var users = await _appContext.Users.Include(user => user.Role).ToListAsync();
+        var publicUsers = new List<UserServiceDto>();
+        foreach (var user in users)
+            publicUsers.Add(new UserServiceDto(user.Id, user.Name, user.Surname, user.Phone, user.Email, user.Sale,
+                user.Role.Name));
+        return publicUsers;
     }
 
-    public async Task<User> GetUserById(int id)
+    public async Task<UserServiceDto> GetUserById(int id)
     {
-        var user = await _appContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+        var user = await _appContext.Users.Include(user => user.Role).FirstOrDefaultAsync(u => u.Id == id);
         if (user is null) throw new ServiceNotFoundError("No user with such id");
-        return user;
+        var publicUser =
+            new UserServiceDto(user.Id, user.Name, user.Surname, user.Phone, user.Email, user.Sale, user.Role.Name);
+        return publicUser;
     }
 
-    public async Task<User> GetUserByEmail(string email)
+    public async Task<UserServiceDto> GetUserByEmail(string email)
     {
-        var user = await _appContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var user = await _appContext.Users.Include(user => user.Role).FirstOrDefaultAsync(u => u.Email == email);
         if (user is null) throw new ServiceNotFoundError("No user with such email");
-        return user;
+        var publicUser =
+            new UserServiceDto(user.Id, user.Name, user.Surname, user.Phone, user.Email, user.Sale, user.Role.Name);
+        return publicUser;
     }
 
     /// <summary>
     ///     Get user data for new user
     /// </summary>
-    /// <param name="dto">Data for registration <see cref="ServiceRegisterDto" /></param>
-    /// <returns>Null if user exists or <see cref="PublicAccountDataDto" /></returns>
-    public async Task<PublicAccountDataDto> Register(ServiceRegisterDto dto)
+    /// <param name="dto">Data for registration <see cref="RegisterAccountServiceDto" /></param>
+    /// <returns>Null if user exists or <see cref="AccountInfoServiceDto" /></returns>
+    public async Task<AccountInfoServiceDto> Register(RegisterAccountServiceDto dto)
     {
         var errors = new List<string>();
         if (!string.IsNullOrWhiteSpace(dto.Password) && !dto.Password.Equals(dto.PasswordConfirm))
@@ -53,7 +61,7 @@ public class AccountService
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (candidate is not null) errors.Add("User already exists");
 
-        if (errors.Count > 0) return new PublicAccountDataDto(null, null, null, errors);
+        if (errors.Count > 0) return new AccountInfoServiceDto(null, null, null, errors);
 
         var refreshToken = _tokenService.BuildRefreshToken();
 
@@ -78,20 +86,21 @@ public class AccountService
         await _appContext.SaveChangesAsync();
 
         var token = _tokenService.BuildToken(candidate);
-        var userData = new PublicUserData(
+        var userData = new UserServiceDto(
             candidate.Id,
             candidate.Name,
             candidate.Surname,
             candidate.Phone,
             candidate.Email,
+            candidate.Sale,
             candidate.Role.Name
         );
         await _appContext.Baskets.AddAsync(new Basket { User = candidate });
         await _appContext.SaveChangesAsync();
-        return new PublicAccountDataDto(userData, token, refreshToken, null);
+        return new AccountInfoServiceDto(userData, token, refreshToken, null);
     }
 
-    public async Task<PublicAccountDataDto> Login(ServiceAccountDto dto)
+    public async Task<AccountInfoServiceDto> Login(LoginAccountServiceDto dto)
     {
         var errors = new List<string>();
 
@@ -106,22 +115,23 @@ public class AccountService
             var refreshToken = _tokenService.BuildRefreshToken();
             candidate.RefreshToken = refreshToken;
             await _appContext.SaveChangesAsync();
-            var userData = new PublicUserData(
+            var userData = new UserServiceDto(
                 candidate.Id,
                 candidate.Name,
                 candidate.Surname,
                 candidate.Phone,
                 candidate.Email,
+                candidate.Sale,
                 candidate.Role.Name
             );
-            return new PublicAccountDataDto(userData, token, refreshToken, null);
+            return new AccountInfoServiceDto(userData, token, refreshToken, null);
         }
 
         errors.Add("Invalid email or password");
-        return new PublicAccountDataDto(null, null, null, errors);
+        return new AccountInfoServiceDto(null, null, null, errors);
     }
 
-    public async Task<bool> DeleteAccount(ServiceAccountDto dto)
+    public async Task<bool> DeleteAccount(LoginAccountServiceDto dto)
     {
         var candidate = await _appContext.Users.FirstOrDefaultAsync(
             u =>
@@ -142,7 +152,7 @@ public class AccountService
         return false;
     }
 
-    public async Task<PublicAccountDataDto> RefreshToken(string accessToken, string refreshToken)
+    public async Task<AccountInfoServiceDto> RefreshToken(string accessToken, string refreshToken)
     {
         var errors = new List<string>();
         var principal = _tokenService.GetClaimsFromExpiredToken(accessToken);
@@ -154,7 +164,7 @@ public class AccountService
         if (user is null || user.RefreshToken != refreshToken)
         {
             errors.Add("Invalid token");
-            return new PublicAccountDataDto(null, null, null, errors);
+            return new AccountInfoServiceDto(null, null, null, errors);
         }
 
         var newAccessToken = _tokenService.BuildToken(user);
@@ -163,8 +173,9 @@ public class AccountService
         user.RefreshToken = newRefreshToken;
         await _appContext.SaveChangesAsync();
 
-        var userData = new PublicUserData(user.Id, user.Name, user.Surname, user.Phone, user.Email, user.Role.Name);
-        return new PublicAccountDataDto(userData, newAccessToken, newRefreshToken, null);
+        var userData = new UserServiceDto(user.Id, user.Name, user.Surname, user.Phone, user.Email, user.Sale,
+            user.Role.Name);
+        return new AccountInfoServiceDto(userData, newAccessToken, newRefreshToken, null);
     }
 
     public async Task<bool> Revoke(string accessToken)

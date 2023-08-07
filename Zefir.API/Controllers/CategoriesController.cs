@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zefir.API.Contracts.Categories;
-using Zefir.BL.Contracts;
-using Zefir.BL.Services;
+using Zefir.BL.Abstractions;
+using Zefir.BL.Contracts.CategoryDto;
 using Zefir.Core.Entity;
-using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
 
@@ -15,7 +14,7 @@ namespace Zefir.API.Controllers;
 [Route("[controller]")]
 public class CategoriesController : ControllerBase
 {
-    private readonly CategoryService _categoryService;
+    private readonly ICategoryService _categoryService;
     private const string GetAllRouteName = "get-all";
     private const string GetByNameRouteName = "get-by-name";
     private const string CreateNewRouteName = "create-new";
@@ -25,7 +24,7 @@ public class CategoriesController : ControllerBase
     /// <summary>
     /// </summary>
     /// <param name="categoryService"></param>
-    public CategoriesController(CategoryService categoryService)
+    public CategoriesController(ICategoryService categoryService)
     {
         _categoryService = categoryService;
     }
@@ -49,77 +48,36 @@ public class CategoriesController : ControllerBase
     [HttpGet("{name}", Name = GetByNameRouteName)]
     public async Task<IActionResult> GetByName(string name)
     {
-        var errors = new List<string>();
-        try
-        {
-            var result = await _categoryService.GetCategoryByName(name);
-            return Ok(result);
-        }
-        catch (ServiceNotFoundError e)
-        {
-            errors.Add(e.Message);
-            return NotFound(new { errors });
-        }
-        catch (Exception e)
-        {
-            errors.Add(e.Message);
-            return StatusCode(500, new { errors });
-        }
+        var result = await _categoryService.GetCategoryByName(name);
+        return Ok(result);
     }
 
     /// <summary>
     /// Creates new category (admin only)
     /// </summary>
-    /// <param name="dto">Data <see cref="ServiceCreateCategoryDto"/></param>
+    /// <param name="dto">Data <see cref="CreateCategoryServiceDto"/></param>
     /// <returns>201 with created at or 400 with errors or 500 with errors</returns>
     [HttpPost("", Name = CreateNewRouteName)]
     [Authorize(Roles = Role.AdminRole)]
-    public async Task<IActionResult> Create(ServiceCreateCategoryDto dto)
+    public async Task<IActionResult> Create(CreateCategoryServiceDto dto)
     {
-        try
-        {
-            var result = await _categoryService.CreateNewCategory(dto);
-            return CreatedAtRoute(GetByNameRouteName, new { result.Name }, result);
-        }
-        catch (ServiceBadRequestError e)
-        {
-            return BadRequest(new { errors = e.FieldErrors });
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            return StatusCode(500, new { errors = new List<string> { e.Message } });
-        }
+        var result = await _categoryService.CreateNewCategory(dto);
+        return CreatedAtRoute(GetByNameRouteName, new { result.Name }, result);
     }
 
     /// <summary>
     /// Updates category (admin only)
     /// </summary>
     /// <param name="name">string name of category</param>
-    /// <param name="dto">Data <see cref="ServiceCreateCategoryDto"/></param>
+    /// <param name="dto">Data <see cref="CreateCategoryServiceDto"/></param>
     /// <returns>200 with updated object or 400 with errors or 404 with errors or 500 with errors</returns>
     [HttpPut("{name}", Name = UpdateNewRouteName)]
     [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> Update(string name, UpdateCategoryDto dto)
     {
-        try
-        {
-            var serviceContract = new ServiceUpdateCategoryDto(dto.Name, dto.Description);
-            var result = await _categoryService.UpdateCategory(name, serviceContract);
-            return Ok(result);
-        }
-        catch (ServiceNotFoundError e)
-        {
-            return NotFound(new { errors = new List<string> { e.Message } });
-        }
-        catch (ServiceBadRequestError e)
-        {
-            return BadRequest(new { errors = e.FieldErrors });
-        }
-        catch (Exception e)
-        {
-            return StatusCode(500, new { errors = new List<string> { e.Message } });
-        }
+        var serviceContract = new UpdateCategoryServiceDto(dto.Name, dto.Description);
+        var result = await _categoryService.UpdateCategory(name, serviceContract);
+        return Ok(result);
     }
 
     /// <summary>
@@ -131,15 +89,8 @@ public class CategoriesController : ControllerBase
     [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> Delete(string name)
     {
-        try
-        {
-            var result = await _categoryService.DeleteCategory(name);
-            if (result) return NoContent();
-            return NotFound(new { });
-        }
-        catch (Exception e)
-        {
-            return StatusCode(500, new { errors = new List<string> { e.Message } });
-        }
+        var result = await _categoryService.DeleteCategory(name);
+        if (result) return NoContent();
+        return NotFound(new { });
     }
 }

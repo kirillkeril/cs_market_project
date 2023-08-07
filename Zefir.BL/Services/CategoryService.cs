@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Zefir.BL.Contracts;
+using Zefir.BL.Abstractions;
+using Zefir.BL.Contracts.CategoryDto;
 using Zefir.Core.Entity;
 using Zefir.Core.Errors;
 using Zefir.DAL;
 
 namespace Zefir.BL.Services;
 
-public class CategoryService
+public class CategoryService : ICategoryService
 {
     private readonly AppDbContext _appDbContext;
 
@@ -15,7 +16,7 @@ public class CategoryService
         _appDbContext = appDbContext;
     }
 
-    public async Task<IEnumerable<Category>> GetAllCategories()
+    public async Task<List<Category>> GetAllCategories()
     {
         var categories = await _appDbContext.Categories.ToListAsync();
         return categories;
@@ -28,7 +29,7 @@ public class CategoryService
         return category;
     }
 
-    public async Task<Category> CreateNewCategory(ServiceCreateCategoryDto dto)
+    public async Task<Category> CreateNewCategory(CreateCategoryServiceDto dto)
     {
         var candidate = await _appDbContext.Categories.FirstOrDefaultAsync(c => c.Name.Equals(dto.Name));
         if (candidate is not null) throw new ServiceBadRequestError(("Name", "Error with such name already exists"));
@@ -41,7 +42,7 @@ public class CategoryService
         return candidate;
     }
 
-    public async Task<Category> UpdateCategory(string name, ServiceUpdateCategoryDto dto)
+    public async Task<Category> UpdateCategory(string name, UpdateCategoryServiceDto dto)
     {
         var errors = new List<(string, string)>();
         var candidate = await _appDbContext.Categories.FirstOrDefaultAsync(c => c.Name.Equals(name));

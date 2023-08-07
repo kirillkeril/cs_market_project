@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Zefir.API.Middlewares;
 using Zefir.BL.Abstractions;
 using Zefir.BL.Services;
 using Zefir.DAL;
@@ -12,7 +13,10 @@ var builder = WebApplication.CreateBuilder();
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddTransient<HandleGlobalErrorsMiddleware>();
+
 builder.Services.AddSingleton<ITokenService>(new TokenService(builder.Configuration));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -26,11 +30,11 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
 {
     optionsBuilder.UseNpgsql(builder.Configuration.GetValue<string>("Db_connection"));
 });
-builder.Services.AddScoped<ProductService>();
-builder.Services.AddScoped<AccountService>();
-builder.Services.AddScoped<CategoryService>();
-builder.Services.AddScoped<OrderService>();
+builder.Services.AddTransient<IProductService, ProductService>();
+builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<IBasketService, BasketService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 // Authentication and authorization
 builder.Services.AddAuthorization();
@@ -69,6 +73,9 @@ app.MapControllers();
 
 app.Run();
 
+/// <summary>
+///     s
+/// </summary>
 public partial class Program
 {
 }

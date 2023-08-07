@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Zefir.BL.Contracts;
+using Zefir.BL.Abstractions;
+using Zefir.BL.Contracts.OrdersDto;
 using Zefir.Core.Entity;
 using Zefir.Core.Errors;
 using Zefir.DAL;
 
 namespace Zefir.BL.Services;
 
-public class OrderService
+public class OrderService : IOrderService
 {
     private readonly AppDbContext _appDbContext;
 
@@ -15,7 +16,7 @@ public class OrderService
         _appDbContext = appDbContext;
     }
 
-    public async Task<List<PublicOrderData>> GetAllOrders(int? userId = null)
+    public async Task<List<OrderInfoServiceDto>> GetAllOrders(int? userId = null)
     {
         List<Order> orders;
         if (userId is null)
@@ -30,21 +31,21 @@ public class OrderService
                 .Where(o => o.User != null && o.User.Id == userId)
                 .ToListAsync();
 
-        var publicOrders = new List<PublicOrderData>();
+        var publicOrders = new List<OrderInfoServiceDto>();
 
         foreach (var order in orders)
         {
             var status = Enum.Parse<Status>(order.Status.ToString());
             if (order.User != null)
                 publicOrders.Add(
-                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline,
+                    new OrderInfoServiceDto(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline,
                         order.Sum));
         }
 
         return publicOrders;
     }
 
-    public async Task<List<PublicOrderData>> GetOwnOrders(int ownerId)
+    public async Task<List<OrderInfoServiceDto>> GetOwnOrders(int ownerId)
     {
         var orders = await _appDbContext.Orders
             .Include(o => o.Products)
@@ -52,20 +53,20 @@ public class OrderService
             .Where(o => o.User != null && o.User.Id == ownerId)
             .ToListAsync();
 
-        List<PublicOrderData> publicOrders = new();
+        List<OrderInfoServiceDto> publicOrders = new();
         foreach (var order in orders)
         {
             var status = Enum.Parse<Status>(order.Status.ToString());
             if (order.User != null)
                 publicOrders.Add(
-                    new PublicOrderData(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline,
+                    new OrderInfoServiceDto(order.Id, order.User.Id, order.Products, status.ToString(), order.Deadline,
                         order.Sum));
         }
 
         return publicOrders;
     }
 
-    public async Task<PublicOrderData> CreateOrder(int userId, ServiceCreateOrderDto orderDto)
+    public async Task<OrderInfoServiceDto> CreateOrder(int userId, CreateOrderServiceDto orderDto)
     {
         DateOnly deadline;
         try
@@ -98,7 +99,7 @@ public class OrderService
         await _appDbContext.SaveChangesAsync();
 
         var status = Enum.Parse<Status>(order.Status.ToString());
-        var publicOrder = new PublicOrderData(
+        var publicOrder = new OrderInfoServiceDto(
             order.Id,
             order.User.Id,
             order.Products,
@@ -108,7 +109,7 @@ public class OrderService
         return publicOrder;
     }
 
-    public async Task<PublicOrderData> UpdateOrderStatus(int id, ServiceUpdateOrderDto dto)
+    public async Task<OrderInfoServiceDto> UpdateOrderStatus(int id, UpdateOrderServiceDto dto)
     {
         var candidate = await _appDbContext.Orders
             .Include(o => o.User)
@@ -124,7 +125,7 @@ public class OrderService
 
         if (candidate.User != null)
         {
-            var publicOrderData = new PublicOrderData(
+            var publicOrderData = new OrderInfoServiceDto(
                 candidate.Id,
                 candidate.User.Id,
                 candidate.Products.ToList(),
