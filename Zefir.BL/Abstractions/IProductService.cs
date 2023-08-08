@@ -5,7 +5,7 @@ namespace Zefir.BL.Abstractions;
 
 public interface IProductService
 {
-    Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "");
+    Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "", string sortBy = "");
     Task<Product?> GetProductById(int id);
     Task<ProductInfoServiceDto?> CreateProduct(CreateProductServiceDto dto);
     Task<ProductInfoServiceDto> UpdateProduct(int id, UpdateProductServiceDto dto);

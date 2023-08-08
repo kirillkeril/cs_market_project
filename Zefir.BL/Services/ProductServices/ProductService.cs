@@ -6,19 +6,21 @@ using Zefir.Core.Entity;
 using Zefir.Core.Errors;
 using Zefir.DAL;
 
-namespace Zefir.BL.Services;
+namespace Zefir.BL.Services.ProductServices;
 
 public class ProductService : IProductService
 {
     private readonly AppDbContext _appDbContext;
     private readonly PaginationHelper _pagination = new(10);
+    private readonly ISortProductsService _sortProductsService;
 
-    public ProductService(AppDbContext appDbContext)
+    public ProductService(AppDbContext appDbContext, ISortProductsService sortProductsService)
     {
         _appDbContext = appDbContext;
+        _sortProductsService = sortProductsService;
     }
 
-    public async Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "")
+    public async Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "", string sortBy = "")
     {
         var products = _appDbContext.Products.Where(
             p =>
@@ -45,9 +47,13 @@ public class ProductService : IProductService
                 foreach (var c in p.Characteristics)
                     characteristics.Add(c.Key, c.Value);
             var productData =
-                new ProductInfoServiceDto(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics);
+                new ProductInfoServiceDto(p.Id, p.Name, p.Description, p.Category.Name, p.Price, characteristics,
+                    p.CreatedAt);
             publicProductData.Add(productData);
         }
+
+        if (!string.IsNullOrWhiteSpace(sortBy))
+            publicProductData = await _sortProductsService.SortProducts(publicProductData, sortBy);
 
         var productDto = new ProductsPagesServiceDto(publicProductData, totalPages, page);
 
@@ -93,7 +99,7 @@ public class ProductService : IProductService
             characteristics.Add(characteristic.Key, characteristic.Value);
 
         var publicProductData = new ProductInfoServiceDto(newProduct.Id, newProduct.Name, newProduct.Description,
-            newProduct.Category.Name, dto.Price, characteristics);
+            newProduct.Category.Name, dto.Price, characteristics, newProduct.CreatedAt);
         return publicProductData;
     }
 
@@ -126,7 +132,7 @@ public class ProductService : IProductService
         var publicProductData = new ProductInfoServiceDto(product.Id, product.Name, product.Description,
             product.Category.Name,
             product.Price,
-            characteristics);
+            characteristics, product.CreatedAt);
 
         return publicProductData;
     }

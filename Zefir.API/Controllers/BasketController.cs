@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zefir.API.Contracts.Basket;
 using Zefir.BL.Abstractions;
+using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
 
@@ -47,15 +48,23 @@ public class BasketController : ControllerBase
     [HttpPost("[controller]")]
     public async Task<IActionResult> AddProductToBasket(AddProductToBasketDto dto)
     {
-        var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        if (userId is null) return Unauthorized();
-        if (int.TryParse(userId.Value, out var id))
+        try
         {
-            await _basketService.AddProductToBasket(id, dto.ProductId);
-            return NoContent();
+            var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (int.TryParse(userId?.Value, out var id))
+            {
+                await _basketService.AddProductToBasket(id, dto.ProductId);
+                return NoContent();
+            }
+
+            return Unauthorized();
+        }
+        catch (ServiceNotFoundError e)
+        {
+            Console.WriteLine(e);
+            return NotFound(new { errors = new List<string> { e.Message } });
         }
 
-        return Unauthorized();
     }
 
     /// <summary>

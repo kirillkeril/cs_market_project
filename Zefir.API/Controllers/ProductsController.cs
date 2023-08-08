@@ -36,9 +36,10 @@ public class ProductController : ControllerBase
     /// </summary>
     /// <param name="page">Number of page</param>
     /// <param name="searchQuery">Optional search query</param>
+    /// <param name="sortBy">Expected values: "name", "price", "date", "category", default - "price"</param>
     [HttpGet(Name = GetAllRouteName)]
     [AllowAnonymous]
-    public async Task<ActionResult> GetAll(int page, string? searchQuery = "")
+    public async Task<ActionResult> GetAll(int page, string? searchQuery = "", string sortBy = "")
     {
         var products = await _productService.GetAllProducts(page);
 

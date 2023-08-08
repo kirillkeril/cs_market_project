@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using Zefir.API.Middlewares;
 using Zefir.BL.Abstractions;
 using Zefir.BL.Services;
+using Zefir.BL.Services.ProductServices;
 using Zefir.DAL;
 
 var builder = WebApplication.CreateBuilder();
