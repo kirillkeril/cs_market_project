@@ -53,15 +53,17 @@ public class AccountService : IAccountService
     /// <returns>Null if user exists or <see cref="AccountInfoServiceDto" /></returns>
     public async Task<AccountInfoServiceDto> Register(RegisterAccountServiceDto dto)
     {
-        var errors = new List<string>();
+        var errors = new List<(string, string)>();
         if (!string.IsNullOrWhiteSpace(dto.Password) && !dto.Password.Equals(dto.PasswordConfirm))
-            errors.Add("Password is not confirmed");
+            errors.Add(("Password", "Password is not confirmed"));
 
         var candidate = await _appContext.Users.Include(user => user.Role)
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (candidate is not null) errors.Add("User already exists");
+        if (candidate is not null) errors.Add(("Username", "User already exists"));
 
-        if (errors.Count > 0) return new AccountInfoServiceDto(null, null, null, errors);
+        if (errors.Count > 0)
+            throw new ServiceBadRequestError(errors.ToArray());
+        // return new AccountInfoServiceDto(null, null, null, errors);
 
         var refreshToken = _tokenService.BuildRefreshToken();
 

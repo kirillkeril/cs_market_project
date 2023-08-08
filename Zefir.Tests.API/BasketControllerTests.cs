@@ -9,12 +9,12 @@ using Zefir.BL.Contracts.BasketDto;
 using Zefir.Core.Entity;
 using Zefir.Core.Errors;
 
-namespace Zefir.Tests.ControllerTests;
+namespace Zefir.Tests.API;
 
 public class BasketControllerTests
 {
     [Fact]
-    public async Task GetUsersBasket_Should_Return_OK_With_Basket()
+    public async Task GetUsersBasket_SendRequest_ShouldReturnOkAndBasket()
     {
         // Arrange
         var userId = "1";
@@ -45,7 +45,7 @@ public class BasketControllerTests
     }
 
     [Fact]
-    public async Task GetUsersBasket_Should_Return_Unauthorized_When_User_Not_Authenticated()
+    public async Task GetUsersBasket_SendRequestWithoutAuthentication_ShouldReturnUnauthorized()
     {
         // Arrange
         var mockBasketService = new Mock<IBasketService>();
@@ -69,7 +69,7 @@ public class BasketControllerTests
     }
 
     [Fact]
-    public async Task AddProductToBasket_Should_Return_NoContent_On_Successful_Addition()
+    public async Task AddProductToBasket_SendRequestWithAuth_ShouldReturnNoContent()
     {
         // Arrange
         var userId = "1";
@@ -101,7 +101,7 @@ public class BasketControllerTests
     }
 
     [Fact]
-    public async Task AddProductToBasket_Should_Return_NotFound_When_ServiceNotFoundError()
+    public async Task AddProductToBasket_UserNotFound_ShouldReturnNotFound()
     {
         // Arrange
         var userId = "1";

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zefir.API.Contracts.Accounts;
 using Zefir.BL.Abstractions;
 using Zefir.BL.Contracts.AccountDto;
 using Zefir.Core.Entity;
+using Zefir.Core.Errors;
 
 namespace Zefir.API.Controllers;
 
@@ -41,8 +43,10 @@ public class AccountsController : ControllerBase
     [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
+        var currentUserRole = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+        if (currentUserRole is null || !currentUserRole.Value.Equals(Role.AdminRole))
+            return StatusCode(StatusCodes.Status403Forbidden);
         var users = await _accountService.GetAllUsers();
-        if (users.Count == 0) return NoContent();
         return Ok(users);
     }
 
@@ -55,21 +59,44 @@ public class AccountsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var user = await _accountService.GetUserById(id);
-        return Ok(user);
+        try
+        {
+            var currentUserRole = HttpContext.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Role));
+            if (currentUserRole is null || !currentUserRole.Value.Equals(Role.AdminRole))
+                return StatusCode(StatusCodes.Status403Forbidden);
+            var user = await _accountService.GetUserById(id);
+            return Ok(user);
+        }
+        catch (ServiceNotFoundError e)
+        {
+            Console.WriteLine(e);
+            return NotFound(new { errors = new List<string> { e.Message } });
+        }
     }
 
     /// <summary>
     /// Get user by email (admin only)
     /// </summary>
-    /// <param name="email">string email</param>
+    /// <param name="dto"></param>
     /// <returns>Ok with user OR 404 with errors OR 500 with errors</returns>
     [Authorize(Roles = Role.AdminRole)]
     [HttpGet("{email}")]
-    public async Task<IActionResult> GetByEmail(string email)
+    public async Task<IActionResult> GetByEmail(GetUserByEmailDto dto)
     {
-        var user = await _accountService.GetUserByEmail(email);
-        return Ok(user);
+        try
+        {
+            var currentUserRole = HttpContext.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Role));
+            if (currentUserRole is null || !currentUserRole.Value.Equals(Role.AdminRole))
+                return StatusCode(StatusCodes.Status403Forbidden);
+
+            var user = await _accountService.GetUserByEmail(dto.Email);
+            return Ok(user);
+        }
+        catch (ServiceNotFoundError e)
+        {
+            Console.WriteLine(e);
+            return NotFound(new { errors = new List<string> { e.Message } });
+        }
     }
 
     /// <summary>
@@ -81,16 +108,24 @@ public class AccountsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register(CreateAccountDto dto)
     {
-        var serviceContract = new RegisterAccountServiceDto(
+        try
+        {
+            var serviceContract = new RegisterAccountServiceDto(
                 dto.Name,
                 dto.Surname,
                 dto.Phone,
                 dto.Email,
                 dto.Password,
                 dto.PasswordConfirm);
-        var result = await _accountService.Register(serviceContract);
-        if (result.Errors is not null) return BadRequest(new { result.Errors });
-        return Ok(result);
+            var result = await _accountService.Register(serviceContract);
+            if (result.Errors is not null) return BadRequest(new { result.Errors });
+            return Ok(result);
+        }
+        catch (ServiceBadRequestError e)
+        {
+            Console.WriteLine(e);
+            return BadRequest(new { errors = e.FieldErrors });
+        }
     }
 
     /// <summary>
@@ -102,10 +137,21 @@ public class AccountsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var serviceContract = new LoginAccountServiceDto(dto.Email, dto.Password);
-        var result = await _accountService.Login(serviceContract);
-        if (result.Errors is not null) return Unauthorized(new { result.Errors });
-        return Ok(result);
+        try
+        {
+            var serviceContract = new LoginAccountServiceDto(dto.Email, dto.Password);
+            var result = await _accountService.Login(serviceContract);
+            if (result.Errors is not null) return BadRequest(new { result.Errors });
+            return Ok(result);
+        }
+        catch (ServiceBadRequestError e)
+        {
+            Console.WriteLine(e);
+            return BadRequest(new
+            {
+                errors = e.FieldErrors
+            });
+        }
     }
 
     /// <summary>
@@ -132,6 +178,10 @@ public class AccountsController : ControllerBase
     [HttpDelete("delete/{id:int}", Name = DeleteAccountByIdRouteName)]
     public async Task<IActionResult> DeleteById(int id)
     {
+        var currentUser = HttpContext.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Role));
+        if (currentUser is null || !currentUser.Value.Equals(Role.AdminRole))
+            return StatusCode(StatusCodes.Status403Forbidden);
+
         var result = await _accountService.DeleteById(id);
         if (result) return NoContent();
         return NotFound(new { });
