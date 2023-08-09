@@ -8,7 +8,6 @@ public sealed class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
         Database.EnsureCreated();
-        Database.MigrateAsync();
     }
 
     public DbSet<Product> Products { get; set; } = null!;
@@ -18,4 +17,5 @@ public sealed class AppDbContext : DbContext
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<Basket> Baskets { get; set; } = null!;
+    public required DbSet<Thematic> Thematics { get; set; }
 }

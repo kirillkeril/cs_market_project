@@ -1,4 +1,4 @@
-﻿using Zefir.Core.Errors;
+﻿using Zefir.Common.Errors;
 
 namespace Zefir.API.Middlewares;
 

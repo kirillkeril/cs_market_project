@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zefir.API.Contracts.Basket;
 using Zefir.BL.Abstractions;
-using Zefir.Core.Errors;
+using Zefir.Common.Errors;
 
 namespace Zefir.API.Controllers;
 
