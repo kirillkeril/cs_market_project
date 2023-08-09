@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Zefir.BL.Abstractions;
 using Zefir.BL.Contracts.BasketDto;
-using Zefir.Core.Errors;
+using Zefir.Common.Errors;
 using Zefir.DAL;
 
 namespace Zefir.BL.Services;

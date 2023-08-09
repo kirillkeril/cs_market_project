@@ -34,6 +34,8 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
 });
 
 builder.Services.AddTransient<IProductService, ProductService>();
+builder.Services.AddTransient<SortProductsService>();
+builder.Services.AddTransient<FilterProductsService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<IBasketService, BasketService>();

@@ -6,8 +6,8 @@ using Zefir.API.Contracts.Accounts;
 using Zefir.API.Controllers;
 using Zefir.BL.Abstractions;
 using Zefir.BL.Contracts.AccountDto;
+using Zefir.Common.Errors;
 using Zefir.Core.Entity;
-using Zefir.Core.Errors;
 
 namespace Zefir.Tests.API;
 

@@ -1,4 +1,4 @@
-﻿namespace Zefir.Core.Errors;
+﻿namespace Zefir.Common.Errors;
 
 public class ServiceNotFoundError : Exception
 {
