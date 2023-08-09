@@ -20,14 +20,20 @@ public class ProductService : IProductService
         _sortProductsService = sortProductsService;
     }
 
-    public async Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "", string sortBy = "")
+    public async Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "", string sortBy = "",
+        string category = "")
     {
+        // Remove spaces for search
+        search = search.Replace(" ", "");
+        sortBy = sortBy.Replace(" ", "");
+        category = category.Replace(" ", "");
+
+        //search and filter products
         var products = _appDbContext.Products.Where(
             p =>
+                p.Category.Name.Contains(category) &&
                 p.Characteristics != null && (p.Name.Contains(search) ||
                                               p.Description.Contains(search) ||
-                                              p.Category.Description.Contains(search) ||
-                                              p.Category.Name.Contains(search) ||
                                               p.Characteristics.Any(c => c.Value.Contains(search)))
         );
 
@@ -39,6 +45,7 @@ public class ProductService : IProductService
             .Include(p => p.Characteristics)
             .ToListAsync();
 
+        //Creates public contract
         var publicProductData = new List<ProductInfoServiceDto>();
         foreach (var p in productsData)
         {

@@ -10,6 +10,7 @@ public class Product
     public string? ImageFilePath { get; set; }
     public Category Category { get; set; } = null!;
     public double Price { get; set; }
+    public int? CountOfPurchases { get; set; }
 
     public Product(string name, string description, double price, string? imageFilePath)
     {
