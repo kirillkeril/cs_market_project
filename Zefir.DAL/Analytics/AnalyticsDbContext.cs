@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Zefir.Core.Analytics.Metrics;
 
 namespace Zefir.DAL.Analytics;
 
@@ -8,4 +9,6 @@ public sealed class AnalyticsDbContext : DbContext
     {
         Database.EnsureCreated();
     }
+
+    public DbSet<Metric> Metrics { get; set; } = null!;
 }
