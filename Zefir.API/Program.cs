@@ -13,8 +13,8 @@ var builder = WebApplication.CreateBuilder();
 
 // Add services to the container.
 
-builder.Services.AddControllers();
 builder.Services.AddTransient<HandleGlobalErrorsMiddleware>();
+builder.Services.AddControllers();
 
 builder.Services.AddSingleton<ITokenService>(new TokenService(builder.Configuration));
 
@@ -33,9 +33,9 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
     optionsBuilder.UseNpgsql(builder.Configuration.GetValue<string>("DbConnection"));
 });
 
+builder.Services.AddTransient<ISortProductsService, SortProductsService>();
 builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddTransient<SortProductsService>();
-builder.Services.AddTransient<FilterProductsService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<IBasketService, BasketService>();
@@ -63,6 +63,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 var app = builder.Build();
 
+app.UseMiddleware<HandleGlobalErrorsMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 // Configure the HTTP request pipeline.

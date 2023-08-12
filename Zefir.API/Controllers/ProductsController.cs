@@ -39,9 +39,9 @@ public class ProductController : ControllerBase
     /// <param name="sortBy">Expected values: "name", "price", "date", "category", default - "price"</param>
     [HttpGet(Name = GetAllRouteName)]
     [AllowAnonymous]
-    public async Task<ActionResult> GetAll(int page, string? searchQuery = "", string sortBy = "")
+    public async Task<ActionResult> GetAll(int page, string searchQuery = "", string sortBy = "")
     {
-        var products = await _productService.GetAllProducts(page);
+        var products = await _productService.GetAllProducts(page, searchQuery, sortBy);
 
         var totalPages = 0;
         HttpContext.Response.Headers.Add("X-Total-Count", totalPages.ToString());

@@ -32,7 +32,7 @@ public class CategoryService : ICategoryService
     public async Task<Category> CreateNewCategory(CreateCategoryServiceDto dto)
     {
         var candidate = await _appDbContext.Categories.FirstOrDefaultAsync(c => c.Name.Equals(dto.Name));
-        if (candidate is not null) throw new ServiceBadRequestError(("Name", "Error with such name already exists"));
+        if (candidate is not null) throw new ServiceBadRequestError(("Name", "Category with such name already exists"));
 
         candidate = new Category(dto.Name, dto.Description);
 

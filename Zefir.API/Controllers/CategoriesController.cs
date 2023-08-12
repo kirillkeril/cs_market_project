@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zefir.API.Contracts.Categories;
 using Zefir.BL.Abstractions;
 using Zefir.BL.Contracts.CategoryDto;
+using Zefir.Common.Errors;
 using Zefir.Core.Entity;
 
 namespace Zefir.API.Controllers;
@@ -56,13 +58,24 @@ public class CategoriesController : ControllerBase
     /// Creates new category (admin only)
     /// </summary>
     /// <param name="dto">Data <see cref="CreateCategoryServiceDto"/></param>
-    /// <returns>201 with created at or 400 with errors or 500 with errors</returns>
+    /// <returns></returns>
     [HttpPost("", Name = CreateNewRouteName)]
     [Authorize(Roles = Role.AdminRole)]
     public async Task<IActionResult> Create(CreateCategoryServiceDto dto)
     {
-        var result = await _categoryService.CreateNewCategory(dto);
-        return CreatedAtRoute(GetByNameRouteName, new { result.Name }, result);
+        try
+        {
+            var userRole = HttpContext.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.Role));
+            if (userRole is null || !string.Equals(userRole.Value, Role.AdminRole))
+                return StatusCode(StatusCodes.Status403Forbidden);
+            var result = await _categoryService.CreateNewCategory(dto);
+            return CreatedAtRoute(GetByNameRouteName, new { result.Name }, result);
+        }
+        catch (ServiceBadRequestError e)
+        {
+            Console.WriteLine(e);
+            return BadRequest(new { errors = e.FieldErrors });
+        }
     }
 
     /// <summary>

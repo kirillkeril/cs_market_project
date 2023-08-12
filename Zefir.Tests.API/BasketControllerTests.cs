@@ -101,6 +101,34 @@ public class BasketControllerTests
     }
 
     [Fact]
+    public async Task AddProductToBasket_SendRequestWithoutAuth_ShouldReturnNoContent()
+    {
+        // Arrange
+        var productId = 123;
+        var mockBasketService = new Mock<IBasketService>();
+        mockBasketService.Setup(s => s.AddProductToBasket(It.IsAny<int>(), It.IsAny<int>()))
+            .Returns(Task.CompletedTask);
+        var controller = new BasketController(mockBasketService.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal()
+                }
+            }
+        };
+        var dto = new AddProductToBasketDto(productId);
+
+        // Act
+        var result = await controller.AddProductToBasket(dto) as UnauthorizedResult;
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
     public async Task AddProductToBasket_UserNotFound_ShouldReturnNotFound()
     {
         // Arrange
@@ -126,6 +154,92 @@ public class BasketControllerTests
 
         // Act
         var result = await controller.AddProductToBasket(dto) as NotFoundObjectResult;
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+        Assert.NotNull(result.Value);
+    }
+
+    [Fact]
+    public async Task RemoveProductFromBasket_SendRequestWithAuth_ShouldReturnNoContent()
+    {
+        // Arrange
+        var userId = "1";
+        var mockBasketService = new Mock<IBasketService>();
+        mockBasketService.Setup(s => s.RemoveProductFromBasket(It.IsAny<int>(), It.IsAny<int>()))
+            .Returns(Task.CompletedTask);
+        var controller = new BasketController(mockBasketService.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+                    {
+                        new(ClaimTypes.NameIdentifier, userId)
+                    }))
+                }
+            }
+        };
+
+        // Act
+        var result = await controller.RemoveProductFromBasket(It.IsAny<int>()) as NoContentResult;
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveProductFromBasket_SendRequestWithoutAuth_ShouldReturnNoContent()
+    {
+        // Arrange
+        var mockBasketService = new Mock<IBasketService>();
+        mockBasketService.Setup(s => s.RemoveProductFromBasket(It.IsAny<int>(), It.IsAny<int>()))
+            .Returns(Task.CompletedTask);
+        var controller = new BasketController(mockBasketService.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal()
+                }
+            }
+        };
+
+        // Act
+        var result = await controller.RemoveProductFromBasket(It.IsAny<int>()) as UnauthorizedResult;
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveProductFromBasket_ProductNotFound_ShouldReturnNotFound()
+    {
+        // Arrange
+        var userId = "1";
+        var mockBasketService = new Mock<IBasketService>();
+        mockBasketService.Setup(s => s.RemoveProductFromBasket(It.IsAny<int>(), It.IsAny<int>()))
+            .ThrowsAsync(new ServiceNotFoundError("Product not found"));
+        var controller = new BasketController(mockBasketService.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+                    {
+                        new(ClaimTypes.NameIdentifier, userId)
+                    }))
+                }
+            }
+        };
+        // Act
+        var result = await controller.RemoveProductFromBasket(It.IsAny<int>()) as NotFoundObjectResult;
 
         // Assert
         Assert.NotNull(result);
