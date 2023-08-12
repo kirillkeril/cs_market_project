@@ -31,8 +31,7 @@ public class BasketController : ControllerBase
     public async Task<IActionResult> GetUsersBasket()
     {
         var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        if (userId is null) return Unauthorized();
-        if (int.TryParse(userId.Value, out var id))
+        if (userId is not null && int.TryParse(userId.Value, out var id))
         {
             var basket = await _basketService.GetUsersBasket(id);
             return Ok(basket);
@@ -68,20 +67,27 @@ public class BasketController : ControllerBase
     }
 
     /// <summary>
-    ///     Add product to user's basket
+    ///     Removes product from user's basket
     /// </summary>
     /// <returns></returns>
     [HttpDelete("[controller]")]
     public async Task<IActionResult> RemoveProductFromBasket(int productId)
     {
-        var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        if (userId is null) return Unauthorized();
-        if (int.TryParse(userId.Value, out var id))
+        try
         {
-            await _basketService.AddProductToBasket(id, productId);
-            return NoContent();
-        }
+            var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userId is not null && int.TryParse(userId.Value, out var id))
+            {
+                await _basketService.RemoveProductFromBasket(id, productId);
+                return NoContent();
+            }
 
-        return Unauthorized();
+            return Unauthorized();
+        }
+        catch (ServiceNotFoundError e)
+        {
+            Console.WriteLine(e);
+            return NotFound(new { errors = new List<string> { e.Message } });
+        }
     }
 }

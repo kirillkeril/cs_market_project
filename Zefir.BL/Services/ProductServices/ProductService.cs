@@ -13,37 +13,24 @@ public class ProductService : IProductService
     private readonly AppDbContext _appDbContext;
     private readonly PaginationHelper _pagination = new(10);
     private readonly ISortProductsService _sortProductsService;
-    private readonly FilterProductsService _filterProductsService;
 
-    public ProductService(AppDbContext appDbContext, ISortProductsService sortProductsService,
-        FilterProductsService filterProductsService)
+    public ProductService(AppDbContext appDbContext, ISortProductsService sortProductsService)
     {
         _appDbContext = appDbContext;
         _sortProductsService = sortProductsService;
-        _filterProductsService = filterProductsService;
     }
 
     public async Task<ProductsPagesServiceDto> GetAllProducts(int page = 0, string search = "", string sortBy = "",
         string category = "", string thematic = "")
     {
-        // Remove spaces for search
-        search = search.Replace(" ", "");
-        sortBy = sortBy.Replace(" ", "");
+        var filteredProducts = new FilterProductsBuilder(_appDbContext)
+            .FilterBySearch(search)
+            .FilterByCategory(category)
+            .FilterByThematic(thematic)
+            .BuildQuery();
 
-        //search and filter products
-        var products = _appDbContext.Products.Where(
-            p =>
-                p.Category.Name.Contains(category) &&
-                p.Characteristics != null && (p.Name.Contains(search) ||
-                                              p.Description.Contains(search) ||
-                                              p.Characteristics.Any(c => c.Value.Contains(search)))
-        );
-
-        var filteredByThematicProducts = await _filterProductsService.FilterByThematic(products, thematic);
-        var filteredByCategory = await _filterProductsService.FilterByCategory(filteredByThematicProducts, thematic);
-
-        var totalPages = _pagination.ComputeCountOfPages(filteredByCategory.Count());
-        var pagedProducts = _pagination.GetPagedItems(filteredByCategory, page);
+        var totalPages = _pagination.ComputeCountOfPages(filteredProducts.Count());
+        var pagedProducts = _pagination.GetPagedItems(filteredProducts, page);
 
         var productsData = await pagedProducts
             .Include(p => p.Category)

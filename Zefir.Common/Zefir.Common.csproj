@@ -6,4 +6,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Zefir.Core\Zefir.Core.csproj"/>
+        <ProjectReference Include="..\Zefir.DAL\Zefir.DAL.csproj"/>
+    </ItemGroup>
+
 </Project>
