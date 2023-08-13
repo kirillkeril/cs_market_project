@@ -41,6 +41,7 @@ public class AccountsController : ControllerBase
     /// <returns>204 OR 200 with users</returns>
     [Authorize(Roles = Role.AdminRole)]
     [HttpGet("all")]
+    [ProducesResponseType<List<UserServiceDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var currentUserRole = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
@@ -57,6 +58,9 @@ public class AccountsController : ControllerBase
     /// <returns>200 with user OR 404 with errors OR 500 with errors</returns>
     [Authorize(Roles = Role.AdminRole)]
     [HttpGet("{id:int}")]
+    [ProducesResponseType<UserServiceDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetById(int id)
     {
         try
@@ -81,6 +85,9 @@ public class AccountsController : ControllerBase
     /// <returns>Ok with user OR 404 with errors OR 500 with errors</returns>
     [Authorize(Roles = Role.AdminRole)]
     [HttpGet("{email}")]
+    [ProducesResponseType<UserServiceDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetByEmail(GetUserByEmailDto dto)
     {
         try
@@ -106,6 +113,8 @@ public class AccountsController : ControllerBase
     /// <returns>User and jwt token OR list of errors <see cref="AccountInfoServiceDto" /></returns>
     [HttpPost("register", Name = RegisterRouteName)]
     [AllowAnonymous]
+    [ProducesResponseType<UserServiceDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register(CreateAccountDto dto)
     {
         try
@@ -135,6 +144,8 @@ public class AccountsController : ControllerBase
     /// <returns>User and token OR list of errors <see cref="LoginAccountServiceDto" /></returns>
     [HttpPost("login", Name = LoginRouteName)]
     [AllowAnonymous]
+    [ProducesResponseType<UserServiceDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login(LoginDto dto)
     {
         try
@@ -161,6 +172,8 @@ public class AccountsController : ControllerBase
     /// <returns>Bad request if users not found OR no content if user deleted</returns>
     [HttpDelete("delete", Name = DeleteAccountRouteName)]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteAccount(DeleteAccountDto dto)
     {
         var serviceContract = new LoginAccountServiceDto(dto.Email, dto.Password);
@@ -175,6 +188,9 @@ public class AccountsController : ControllerBase
     /// <param name="id">integer id</param>
     /// <returns>204 OR 404 OR 500 with errors</returns>
     [Authorize(Roles = Role.AdminRole)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpDelete("delete/{id:int}", Name = DeleteAccountByIdRouteName)]
     public async Task<IActionResult> DeleteById(int id)
     {
@@ -194,6 +210,8 @@ public class AccountsController : ControllerBase
     /// <returns>Unauthorized with list of errors OR login data <see cref="LoginAccountServiceDto" /></returns>
     [AllowAnonymous]
     [HttpPost("refresh", Name = RefreshTokenRouteName)]
+    [ProducesResponseType<AccountInfoServiceDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> RefreshToken(RefreshAccessTokenDto refreshToken)
     {
         var authHeader = HttpContext.Request.Headers.Authorization;
@@ -210,6 +228,9 @@ public class AccountsController : ControllerBase
     /// </summary>
     /// <returns>NoContent or BadRequest</returns>
     [HttpPatch("logout", Name = LogoutRouteName)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize]
     public async Task<IActionResult> Logout()
     {
