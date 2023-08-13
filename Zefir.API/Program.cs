@@ -39,7 +39,7 @@ builder.Services.AddTransient<SortProductsService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<IBasketService, BasketService>();
-builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddTransient<IAccountService, AccountService>();
 
 // Authentication and authorization
 builder.Services.AddAuthorization();
