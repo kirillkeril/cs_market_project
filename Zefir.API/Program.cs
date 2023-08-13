@@ -3,20 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Zefir.API.Infrastructure;
 using Zefir.API.Middlewares;
-using Zefir.BL.Abstractions;
-using Zefir.BL.Services;
-using Zefir.BL.Services.ProductServices;
 using Zefir.DAL;
 
 var builder = WebApplication.CreateBuilder();
 
 // Add services to the container.
-
 builder.Services.AddTransient<HandleGlobalErrorsMiddleware>();
-builder.Services.AddControllers();
 
-builder.Services.AddSingleton<ITokenService>(new TokenService(builder.Configuration));
+builder.UseBlServices();
+
+builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -32,14 +30,6 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
 {
     optionsBuilder.UseNpgsql(builder.Configuration.GetValue<string>("DbConnection"));
 });
-
-builder.Services.AddTransient<ISortProductsService, SortProductsService>();
-builder.Services.AddTransient<IProductService, ProductService>();
-builder.Services.AddTransient<SortProductsService>();
-builder.Services.AddTransient<ICategoryService, CategoryService>();
-builder.Services.AddTransient<IOrderService, OrderService>();
-builder.Services.AddTransient<IBasketService, BasketService>();
-builder.Services.AddTransient<IAccountService, AccountService>();
 
 // Authentication and authorization
 builder.Services.AddAuthorization();
@@ -63,24 +53,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 var app = builder.Build();
 
+
+// Configure the HTTP request pipeline.
 app.UseMiddleware<HandleGlobalErrorsMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 
 app.MapControllers();
 
 app.Run();
 
 /// <summary>
-///     s
+///
 /// </summary>
 public partial class Program
 {
