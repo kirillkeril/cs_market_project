@@ -37,7 +37,7 @@ public class OrdersController : ControllerBase
     /// <returns></returns>
     [HttpGet("all", Name = GetAllOrderRouteName)]
     [Authorize(Roles = Role.AdminRole)]
-    public async Task<IActionResult> GetAllOrders([FromQuery] int? userId)
+    public async Task<IActionResult> GetAllOrders([FromQuery] int? userId = null)
     {
         var result = await _orderService.GetAllOrders(userId);
         return Ok(result);
@@ -52,8 +52,7 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> GetOwnOrders()
     {
         var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        if (userIdClaim is null) return Unauthorized();
-        if (int.TryParse(userIdClaim.Value, out var userId))
+        if (userIdClaim is not null && int.TryParse(userIdClaim.Value, out var userId))
         {
             var result = await _orderService.GetOwnOrders(userId);
             return Ok(result);

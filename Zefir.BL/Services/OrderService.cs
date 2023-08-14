@@ -19,6 +19,7 @@ public class OrderService : IOrderService
     public async Task<List<OrderInfoServiceDto>> GetAllOrders(int? userId = null)
     {
         List<Order> orders;
+        // Если Id пользователя не передан - вернуть все заказы
         if (userId is null)
             orders = await _appDbContext.Orders
                 .Include(o => o.User)
